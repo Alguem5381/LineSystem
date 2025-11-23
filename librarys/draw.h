@@ -1,6 +1,13 @@
 #ifndef DRAW_H
 #define DRAW_H
 
+//Para facilitar o uso da função de dividir contextos
+#define HORIZONTAL 0
+#define VERTICAL 1
+
+#define FIRST 0
+#define SECOND 1
+
 #include <wchar.h>
 
 typedef struct DrawContext
@@ -20,17 +27,17 @@ typedef struct DrawContext
 
 int draw_text_box(wchar_t const *text, DrawContext const *context);
 
-int draw_base_page(wchar_t *title, DrawContext const *context);
+int draw_base_page(wchar_t const *title, DrawContext const *context);
 
-int draw_message_dialog(wchar_t *message, DrawContext const *context);
+int draw_message_dialog(wchar_t const *message, DrawContext const *context);
 
-int draw_yes_or_no_dialog(wchar_t *message, DrawContext const *context);
+int draw_yes_or_no_dialog(wchar_t const *message, DrawContext const *context);
 
 int draw_footer(wchar_t **keys, wchar_t **options, int array_length, DrawContext const *context);
 
 int draw_list(wchar_t **elements, int array_length, DrawContext const *context);
 
-int draw_label(wchar_t *text, DrawContext const *context);
+int draw_label(wchar_t const *text, DrawContext const *context);
 
 int split_context(DrawContext *dest, DrawContext const *src, int percent, int half, int direction);
 
