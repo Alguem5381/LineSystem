@@ -84,13 +84,13 @@ int draw_text_box(wchar_t const *text, DrawContext const *context)
 {
     Coordinates coordinates;
 
-    if (!define_coordinates(&coordinates, context, 1, 9) || !text || !context)
+    if (!define_coordinates(&coordinates, context, 3, 9) || !text || !context)
         return 0;
 
     attron(COLOR_PAIR(context->default_pair_color));
     draw_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
 
-    mvaddnwstr(coordinates.vertical_middle, coordinates.initial_x + 1, text, coordinates.final_x - 2);
+    mvaddnwstr(coordinates.vertical_middle, coordinates.initial_x + 1, text, coordinates.width - 2);
     attroff(COLOR_PAIR(context->default_pair_color));
 
     attron(COLOR_PAIR(context->default_border_color));
@@ -100,7 +100,7 @@ int draw_text_box(wchar_t const *text, DrawContext const *context)
     return 1;
 }
 
-int draw_base_page(wchar_t *title, DrawContext const *context)
+int draw_base_page(wchar_t const *title, DrawContext const *context)
 {
     if (context->endx < 10 || context->endy < 8 || !title || !context || wcslen(title) + 4 > context->endx)
         return 0;
@@ -120,7 +120,7 @@ int draw_base_page(wchar_t *title, DrawContext const *context)
     return 1;
 }
 
-int draw_message_dialog(wchar_t *message, DrawContext const *context)
+int draw_message_dialog(wchar_t const *message, DrawContext const *context)
 {
     Coordinates coordinates;
 
@@ -169,7 +169,7 @@ int draw_message_dialog(wchar_t *message, DrawContext const *context)
     return 1;
 }
 
-int draw_yes_or_no_dialog(wchar_t *message, DrawContext const *context)
+int draw_yes_or_no_dialog(wchar_t const *message, DrawContext const *context)
 {
     Coordinates coordinates;
 
@@ -342,7 +342,7 @@ int draw_list(wchar_t **elements, int array_length, DrawContext const *context)
     return 1;
 }
 
-int draw_label(wchar_t *text, DrawContext const *context)
+int draw_label(wchar_t const *text, DrawContext const *context)
 {
     Coordinates coordinates;
 
@@ -358,7 +358,7 @@ int draw_label(wchar_t *text, DrawContext const *context)
     int text_length = wcslen(text);
 
     // Ponteiro para navegar pelo texto
-    wchar_t *dummy = text;
+    wchar_t *dummy = (wchar_t*)text;
 
     attron(COLOR_PAIR(context->default_pair_color)); // Ativa a cor padrão
     // Desenha a caixa
