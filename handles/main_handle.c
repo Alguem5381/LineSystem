@@ -1,16 +1,18 @@
 #include <main_handle.h>
 #include <main_page.h>
+#include <stdlib.h>
 
 States init_main_handle(Style const *style)
 {
     //Loop principal
+    void *persistence = NULL;
 
     int running = 1;
     States state;
 
     while(running)
     {
-        PageResult result = init_main_page(style);
+        PageResult result = init_main_page(style, &persistence);
 
         //Manipulação do resultado da página
 
@@ -30,6 +32,12 @@ States init_main_handle(Style const *style)
         default:
             break;
         }
+    }
+
+    if (!persistence)
+    {    
+        free(persistence);
+        persistence = NULL;
     }
 
     return state;

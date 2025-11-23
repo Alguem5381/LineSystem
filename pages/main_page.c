@@ -5,7 +5,7 @@
 
 //Inicializador da página
 
-PageResult init_main_page(Style const *style)
+PageResult init_main_page(Style const *style, void **persistence)
 {
     PageResult result = {0};
 
@@ -41,57 +41,70 @@ PageResult init_main_page(Style const *style)
     int need_draw = 1;
     int running = 1;
     int selected = 0;
-    int character = KEY_RESIZE;
+
+    int status = 256;
+    wint_t character = KEY_RESIZE;
 
     while(running)
     {
-        switch (character)
+        if (status == KEY_CODE_YES) //Teclas especiais vão aqui
         {
-        case KEY_RESIZE:
-        {
-            resize_term(0, 0);
-            general_context.endx = COLS;
-            general_context.endy = LINES;
+            switch (character)
+            {
+            case KEY_RESIZE:
+            {
+                resize_term(0, 0);
+                general_context.endx = COLS;
+                general_context.endy = LINES;
 
-            split_context(&list_context, &general_context, 50, 0, 0);
+                split_context(&list_context, &general_context, 50, 0, 0);
 
-            list_context.starty = general_context.starty + 4;
-            list_context.endy = general_context.endy - 4;
+                list_context.starty = general_context.starty + 4;
+                list_context.endy = general_context.endy - 4;
 
-            need_draw = 1;
+                need_draw = 1;
 
-            break;
+                break;
+            }
+
+            case '\n':
+                result.action = page_action_select;
+                result.selected_index = list_context.element_in_focus;
+                running = 0;
+                break;
+
+            case KEY_UP:
+                if (list_context.element_in_focus > 0)
+                {
+                    list_context.element_in_focus--;
+                    need_draw = 1;
+                }
+                break;
+
+            case KEY_DOWN:
+                if (list_context.element_in_focus < elements_length - 1)
+                {
+                    list_context.element_in_focus++;
+                    need_draw = 1;
+                }
+                break;
+
+            default:
+                break;
+            }
         }
-
-        case '\n':
-            result.action = page_action_select;
-            result.selected_index = list_context.element_in_focus;
-            running = 0;
-            break;
-
-        case KEY_UP:
-            if (list_context.element_in_focus > 0)
+        else    //Aqui vão as teclas comuns
+        {
+            switch (character)
             {
-                list_context.element_in_focus--;
-                need_draw = 1;
+            case 27:
+                result.action = page_action_back;
+                running = 0;
+                break;
+            
+            default:
+                break;
             }
-            break;
-
-        case KEY_DOWN:
-            if (list_context.element_in_focus < elements_length - 1)
-            {
-                list_context.element_in_focus++;
-                need_draw = 1;
-            }
-            break;
-
-        case 27:
-            result.action = page_action_back;
-            running = 0;
-            break;
-
-        default:
-            break;
         }
 
         if (need_draw)
@@ -105,7 +118,7 @@ PageResult init_main_page(Style const *style)
         }
 
         if(running)
-            character = getch();
+            status = get_wch(&character);
     }
 
     return result;
