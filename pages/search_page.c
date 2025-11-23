@@ -2,10 +2,20 @@
 #include <ncursesw/ncurses.h>
 #include <search_page.h>
 #include <draw.h>
+#include <stdlib.h>
+
+//Struct para memória persistente
+
+typedef struct Persistence
+{
+    int list_select;
+    int is_search_bar_selected;
+} Persistence;
+
 
 //Inicializador da página
 
-PageResult init_search_page(Style const *style, wchar_t const *search_text, wchar_t const *time_text, wchar_t const *label_text, wchar_t *elements[], int const elements_length)
+PageResult init_search_page(Style const *style, void **persistence, wchar_t const *search_text, wchar_t const *time_text, wchar_t const *label_text, wchar_t *elements[], int const elements_length)
 {
     PageResult result = {0};
 
@@ -25,7 +35,8 @@ PageResult init_search_page(Style const *style, wchar_t const *search_text, wcha
 
     DrawContext search_bar_context = {
         .height = 100,
-        .width = 90
+        .width = 90,
+        .element_in_focus = 1
     };
 
     DrawContext time_bar_context = {
@@ -61,8 +72,24 @@ PageResult init_search_page(Style const *style, wchar_t const *search_text, wcha
     int status = 256;
     wint_t character = KEY_RESIZE;
 
+    //Usando a memória persistente
+    Persistence *memory = NULL;
+
+    if ((*persistence))
+    {
+        memory = (Persistence*)*persistence;
+
+        list_context.element_in_focus = memory->list_select;
+        if (!memory->is_search_bar_selected)
+        {
+            search_bar_context.element_in_focus = 0;
+            time_bar_context.element_in_focus = 1;
+        }
+    }
+
     while(running)
     {
+        //Tratamento de tecla
         if (status) //Teclas especias vão aqui
         {
             switch (character)
@@ -121,12 +148,18 @@ PageResult init_search_page(Style const *style, wchar_t const *search_text, wcha
                 result.action = page_action_back;
                 running = 0;
                 break;
+
+            case '\n': 
+                result.action = page_action_select;
+                running = 0;
+                break;
             
             default:
                 break;
             }
         }
 
+        //Desenho
         if (need_draw)
             {
                 int sucessful = 1;
@@ -141,9 +174,29 @@ PageResult init_search_page(Style const *style, wchar_t const *search_text, wcha
                 refresh();
             }
 
+        //Capitura de tecla
         if(running)
             status = get_wch(&character);
     }
+
+    //Se não tiver nada na memória, então a página cria uma nova
+    if (!memory)
+    {
+        memory = (Persistence*)malloc(sizeof(Persistence));
+
+        if (!memory)
+            return result;
+    }
+
+    //Salva o que é necessário na memória 
+    memory->list_select = list_context.element_in_focus;
+    if (search_bar_context.element_in_focus)
+        memory->is_search_bar_selected = 1;
+    else
+        memory->is_search_bar_selected = 0;
+
+    //Passa o endereço da memória para o persistence
+    *persistence = memory;
 
     return result;
 }
