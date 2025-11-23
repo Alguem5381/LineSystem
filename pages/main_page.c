@@ -57,7 +57,7 @@ PageResult init_main_page(Style const *style, void **persistence)
                 general_context.endx = COLS;
                 general_context.endy = LINES;
 
-                split_context(&list_context, &general_context, 50, 0, 0);
+                split_context(&list_context, &general_context, 50, FIRST, HORIZONTAL);
 
                 list_context.starty = general_context.starty + 4;
                 list_context.endy = general_context.endy - 4;

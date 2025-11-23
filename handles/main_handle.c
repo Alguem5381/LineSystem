@@ -7,6 +7,7 @@ States init_main_handle(Style const *style)
     //Loop principal
     void *persistence = NULL;
 
+    //Variaveis do loop
     int running = 1;
     States state;
 
