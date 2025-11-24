@@ -47,6 +47,8 @@ Key get_key(wint_t key, int status)
         return backspace;
 
         default:
+            if (is_number((wchar_t) key))
+                return number;
             if (is_wletter((wchar_t)key))
                 return common;
 
