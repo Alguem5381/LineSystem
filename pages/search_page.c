@@ -3,74 +3,64 @@
 #include <search_page.h>
 #include <draw.h>
 #include <stdlib.h>
+#include <letter.h>
+#include <keys.h>
 
-//Struct para memória persistente
+// Struct para memória persistente
 
 typedef struct Persistence
 {
+    wchar_t search_text[256];
+    wchar_t time_text[256];
     int list_select;
     int is_search_bar_selected;
 } Persistence;
 
+// Inicializador da página
 
 PageResult init_search_page(Style const *style, void **persistence, int state, wchar_t const *label_text, wchar_t *elements[], int const elements_length)
 {
     PageResult result = {0};
 
-    //Contextos
-    DrawContext general_context =
-    {
-        .startx = 0,
-        .starty = 0,
+    // Contextos
+    DrawContext general_context = {
         .width = 100,
-        .height = 100
-    };
-
+        .height = 100};
     DrawContext list_context = {
         .height = 100,
-        .width = 90
-    };
-
+        .width = 90};
     DrawContext search_bar_context = {
         .height = 100,
         .width = 90,
-        .element_in_focus = 1
-    };
-
+        .element_in_focus = 1};
     DrawContext time_bar_context = {
         .height = 100,
-        .width = 90
-    };
-
+        .width = 90};
     DrawContext label_context = {
         .height = 100,
-        .width = 90
-    };
+        .width = 90};
 
-    //Definição de estilo para os contextos
+    // Definição de estilo para os contextos
     set_style(style, &general_context);
     set_style(style, &list_context);
     set_style(style, &search_bar_context);
     set_style(style, &time_bar_context);
     set_style(style, &label_context);
 
-    //Vetores utilizados
-    wchar_t *keys[] = {L"Esc", L"↑", L"↓", L"↵"};
-    wchar_t *options[] = {L"Sair", L"Subir", L"Descer", L"Selecionar"};
+    // Vetores utilizados
+    wchar_t default_search_text[] = L"Pesquise uma parada";
+    wchar_t default_time_text[] = L"Hora de saída. (Ex: 11h30m)";
 
-    //Tamanho dos vetores
+    wchar_t search_text[256] = L"\0";
+    wchar_t time_text[256] = L"\0";
+
+    wchar_t *keys[] = {L"Esc", L"↑", L"↓", L"←", L"→", L"↵"};
+    wchar_t *options[] = {L"Sair", L"Subir", L"Descer", L"Direita", L"Esquerda", L"Selecionar"};
+
+    // Tamanho dos vetores
     int keys_length = sizeof(keys) / sizeof(keys[0]);
 
-    //Variaveis para o loop
-    int need_draw = 1;
-    int running = 1;
-    int selected = 0;
-
-    //Para capituras de teclas
-    int status = 256;
-    wint_t character = KEY_RESIZE;
-
-    //Usando a memória persistente
+    // Usando a memória persistente
     Persistence *memory = NULL;
 
     if ((*persistence))
@@ -83,117 +73,189 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             search_bar_context.element_in_focus = 0;
             time_bar_context.element_in_focus = 1;
         }
+
+        if (memory->search_text[0] != '\0')
+            wcscpy(search_text, memory->search_text);
+
+        if (memory->time_text[0] != '\0')
+            wcscpy(time_text, memory->time_text);
     }
 
-    while(running)
+    // Para capituras de teclas
+    Key key = unknown;
+    wint_t character;
+
+    // Variaveis para o loop
+    int need_draw = 1;
+    int need_split = 1;
+    int running = 1;
+    int is_popup_on = 0;
+
+    while (running)
     {
-        //Tratamento de tecla
-        if (status) //Teclas especias vão aqui
+        // Tratamento de teclas
+        switch (key)
         {
-            switch (character)
+        case resize:
+            resize_term(0, 0);
+            need_split = 1;
+            need_draw = 1;
+            break;
+
+        case right:
+            search_bar_context.element_in_focus = 0;
+            time_bar_context.element_in_focus = 1;
+            need_draw = 1;
+            break;
+
+        case left:
+            search_bar_context.element_in_focus = 1;
+            time_bar_context.element_in_focus = 0;
+            need_draw = 1;
+            break;
+
+        case up:
+            if (list_context.element_in_focus > 0)
             {
-            case KEY_RESIZE:
-            {
-                resize_term(0, 0);
-                general_context.endx = COLS;
-                general_context.endy = LINES;
-
-                DrawContext main_panel_context = general_context;
-                DrawContext left_panel_context;
-                DrawContext right_panel_context;
-
-                main_panel_context.starty += 5;
-                main_panel_context.endy -= 5;
-
-                split_context(&left_panel_context, &main_panel_context, 50, 0, 0);
-                split_context(&right_panel_context, &main_panel_context, 50, 1, 0);
-
-                split_context(&list_context, &left_panel_context, 20, 1, 1);
-                split_context(&search_bar_context, &left_panel_context, 30, 0, 1);
-                split_context(&time_bar_context, &right_panel_context, 30, 0, 1);
-                split_context(&label_context, &right_panel_context, 20, 1, 1);
-
+                list_context.element_in_focus--;
                 need_draw = 1;
-
-                break;
             }
+            break;
 
-            case KEY_UP:
-                if (list_context.element_in_focus > 0)
-                {
-                    list_context.element_in_focus--;
-                    need_draw = 1;
-                }
-                break;
-
-            case KEY_DOWN:
-                if (list_context.element_in_focus < elements_length - 1)
-                {
-                    list_context.element_in_focus++;
-                    need_draw = 1;
-                }
-                break;
-
-            default:
-                break;
+        case down:
+            if (list_context.element_in_focus < elements_length - 1)
+            {
+                list_context.element_in_focus++;
+                need_draw = 1;
             }
+            break;
+
+        case esc:
+            result.action = page_action_back;
+            running = 0;
+            break;
+
+        case enter:
+            result.action = page_action_select;
+            running = 0;
+            break;
+
+        case common:
+            if (search_bar_context.element_in_focus)
+            {
+                wcsncat(search_text, &character, 1);
+                result.action = page_action_text;
+                wcscpy(result.text, search_text);
+                running = 0;
+            }
+            else
+                wcsncat(time_text, &character, 1);
+
+            need_draw = 1;
+            break;
+
+        case backspace:
+            if (search_bar_context.element_in_focus)
+            {
+                if (!remove_lastw(search_text))
+                {
+                    need_draw = 1;
+                    break;
+                }
+
+                result.action = page_action_text;
+                wcscpy(result.text, search_text);
+                running = 0;
+            }
+            else
+                remove_lastw(time_text);
+
+            need_draw = 1;
+            break;
+
+        default:
+            break;
         }
-        else        //Teclas comuns
+
+        // Definição das coordendas dos contextos
+        if (need_split)
         {
-            switch (character)
-            {
-            case 27:
-                result.action = page_action_back;
-                running = 0;
-                break;
+            general_context.startx = 0;
+            general_context.starty = 0;
+            general_context.endx = COLS;
+            general_context.endy = LINES;
 
-            case '\n': 
-                result.action = page_action_select;
-                running = 0;
-                break;
-            
-            default:
-                break;
-            }
+            DrawContext main_panel_context = general_context;
+            DrawContext left_panel_context;
+            DrawContext right_panel_context;
+
+            main_panel_context.starty += 5;
+            main_panel_context.endy -= 5;
+
+            split_context(&left_panel_context, &main_panel_context, 50, 0, 0);
+            split_context(&right_panel_context, &main_panel_context, 50, 1, 0);
+
+            split_context(&list_context, &left_panel_context, 20, 1, 1);
+            split_context(&search_bar_context, &left_panel_context, 30, 0, 1);
+            split_context(&time_bar_context, &right_panel_context, 30, 0, 1);
+            split_context(&label_context, &right_panel_context, 20, 1, 1);
+
+            need_split = 0;
         }
 
-        //Desenho
+        // Desenho
         if (need_draw)
-            {
-                int sucessful = 1;
-                sucessful *= draw_base_page(L"Buscar rotas - origem", &general_context);
-                sucessful *= draw_footer(keys, options, keys_length, &general_context);
+        {
+            int sucessful = 1;
+            sucessful *= draw_base_page(L"Buscar rotas - origem", &general_context);
+            sucessful *= draw_footer(keys, options, keys_length, &general_context);
+            sucessful *= draw_label(label_text, &label_context);
+            sucessful *= draw_list(elements, elements_length, &list_context);
+
+            if (search_text[0] != '\0')
                 sucessful *= draw_text_box(search_text, &search_bar_context);
+            else
+                sucessful *= draw_text_box(default_search_text, &search_bar_context);
+
+            if (time_text[0] != '\0')
                 sucessful *= draw_text_box(time_text, &time_bar_context);
-                sucessful *= draw_label(label_text, &label_context);
-                sucessful *= draw_list(elements, elements_length, &list_context);
+            else
+                sucessful *= draw_text_box(default_time_text, &time_bar_context);
 
-                need_draw = 0;
-                refresh();
-            }
+            need_draw = 0;
+            refresh();
+        }
 
-        //Capitura de tecla
-        if(running)
-            status = get_wch(&character);
+        // Capitura de tecla
+        if (running)
+        {
+            int status = get_wch(&character);
+            key = get_key(character, status);
+        }
     }
 
-    //Se não tiver nada na memória, então a página cria uma nova
+    // Se não tiver nada na memória, então a página cria uma nova
     if (!memory)
     {
-        memory = (Persistence*)malloc(sizeof(Persistence));
+        memory = (Persistence *)malloc(sizeof(Persistence));
 
         if (!memory)
+        {
+            result.action = page_action_fail;
             return result;
+        }
     }
 
-    //Salva o que é necessário na memória 
+    // Salva o que é necessário na memória
     memory->list_select = list_context.element_in_focus;
+    wcscpy(memory->search_text, search_text);
+    wcscpy(memory->time_text, time_text);
     if (search_bar_context.element_in_focus)
         memory->is_search_bar_selected = 1;
     else
         memory->is_search_bar_selected = 0;
 
-    //Passa o endereço da memória para o persistence
+    // Modifica o ponteiro no handle
     *persistence = memory;
 
     return result;

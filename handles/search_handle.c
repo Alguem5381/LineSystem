@@ -7,10 +7,11 @@ States init_search_handle(Style const *style)
     //Ponteiro para memória persistente da página
     void *persistence = NULL;
 
+    //Estado da página
+    int state = 0;
+
     //Vetores que serão usados
     wchar_t infomations[] = L"Nada ainda1";
-    wchar_t search_bar_text[] = L"Pesquise uma parada";
-    wchar_t time_bar_text[] = L"Hora de chegada/saida. (Ex: 19h30m)";
     wchar_t *elements[] = {L"Nada ainda4", L"Nada ainda5"};
 
     //Tamanho do vetor
@@ -22,7 +23,7 @@ States init_search_handle(Style const *style)
 
     while(running)
     {
-        PageResult result = init_search_page(style, &persistence, search_bar_text, time_bar_text, infomations, elements, elements_length);
+        PageResult result = init_search_page(style, &persistence, state, infomations, elements, elements_length);
 
         //Manipulação do resultado da página
 
