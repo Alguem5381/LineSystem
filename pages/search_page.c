@@ -13,9 +13,7 @@ typedef struct Persistence
 } Persistence;
 
 
-//Inicializador da página
-
-PageResult init_search_page(Style const *style, void **persistence, wchar_t const *search_text, wchar_t const *time_text, wchar_t const *label_text, wchar_t *elements[], int const elements_length)
+PageResult init_search_page(Style const *style, void **persistence, int state, wchar_t const *label_text, wchar_t *elements[], int const elements_length)
 {
     PageResult result = {0};
 
