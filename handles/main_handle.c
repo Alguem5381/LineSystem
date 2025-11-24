@@ -25,8 +25,20 @@ States init_main_handle(Style const *style)
             break;
 
         case page_action_select:
-            if(result.selected_index == 0)
+            switch (result.selected_index)
+            {
+            case 0: 
                 state = state_search;
+                break;
+
+            case 1: 
+                state = state_login; 
+                break;
+
+            default:
+                break;
+            }
+
             running = 0;
             break;
 
