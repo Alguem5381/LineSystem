@@ -42,6 +42,10 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     DrawContext label_context = {
         .height = 100,
         .width = 90};
+    DrawContext dialog_context = {
+        .height = 100,
+        .width = 50
+    };
 
     // Definição de estilo para os contextos
     set_style(style, &general_context);
@@ -49,11 +53,12 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     set_style(style, &search_bar_context);
     set_style(style, &time_bar_context);
     set_style(style, &label_context);
+    set_style(style, &dialog_context);
 
     // Vetores utilizados
     wchar_t default_search_text[DBL];
     wchar_t default_time_text[DBL];
-
+    wchar_t dialog_text[DBL] = L"Digite um horário válido";
     wchar_t title_text[DBL];
     wchar_t search_text[DBL] = L"\0";
     wchar_t time_text[DBL] = L"\0";
@@ -83,10 +88,10 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             time_bar_context.element_in_focus = 1;
         }
 
-        if (is_emptyw(memory->search_text))
+        if (!is_emptyw(memory->search_text))
             wcscpy(search_text, memory->search_text);
 
-        if (is_emptyw(memory->time_text))
+        if (!is_emptyw(memory->time_text))
             wcscpy(time_text, memory->time_text);
     }
 
@@ -95,7 +100,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     {
     case 0:
         wcscpy(title_text, L"Busca de rotas - Origem");
-        wcscpy(default_search_text, L"Pesquise uma parada incial");
+        wcscpy(default_search_text, L"Pesquise uma parada inicial");
         wcscpy(default_time_text, L"Hora de saída. (Ex: 11h30m)");
         break;
 
@@ -137,18 +142,24 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             break;
 
         case right:
+            if (is_popup_on) break;
+
             search_bar_context.element_in_focus = 0;
             time_bar_context.element_in_focus = 1;
             need_draw = 1;
             break;
 
         case left:
+            if (is_popup_on) break;
+
             search_bar_context.element_in_focus = 1;
             time_bar_context.element_in_focus = 0;
             need_draw = 1;
             break;
 
         case up:
+            if (is_popup_on) break;
+
             if (list_context.element_in_focus > 0)
             {
                 list_context.element_in_focus--;
@@ -157,6 +168,8 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             break;
 
         case down:
+            if (is_popup_on) break;
+
             if (list_context.element_in_focus < elements_length - 1)
             {
                 list_context.element_in_focus++;
@@ -165,16 +178,37 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             break;
 
         case esc:
+            if (is_popup_on) break;
+
             result.action = page_action_back;
             running = 0;
             break;
 
         case enter:
-            result.action = page_action_select;
+            if (is_popup_on)
+            {
+                is_popup_on = 0;
+                need_draw = 1;
+                break;
+            }
+
+            if (is_emptyw(time_text))
+            {
+                is_popup_on = 1;
+                need_draw = 1;
+                need_split = 1;
+                break;
+            }
+
+            result.action = page_action_text_and_selected;
+            wcscpy(result.text, time_text);
+            result.selected_index = list_context.element_in_focus;
             running = 0;
+
             break;
 
         case common:
+        case number:
             if (search_bar_context.element_in_focus)
             {
                 add_lastw(search_text, DBL, character);
@@ -226,13 +260,18 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             main_panel_context.starty += 5;
             main_panel_context.endy -= 5;
 
-            split_context(&left_panel_context, &main_panel_context, 50, 0, 0);
-            split_context(&right_panel_context, &main_panel_context, 50, 1, 0);
+            split_context(&left_panel_context, &main_panel_context, 50, FIRST, HORIZONTAL);
+            split_context(&right_panel_context, &main_panel_context, 50, SECOND, HORIZONTAL);
 
-            split_context(&list_context, &left_panel_context, 20, 1, 1);
-            split_context(&search_bar_context, &left_panel_context, 30, 0, 1);
-            split_context(&time_bar_context, &right_panel_context, 30, 0, 1);
-            split_context(&label_context, &right_panel_context, 20, 1, 1);
+            if (is_popup_on)
+            {
+                split_context(&dialog_context, &main_panel_context, 100, FIRST, HORIZONTAL);
+            }
+
+            split_context(&list_context, &left_panel_context, 20, SECOND, VERTICAL);
+            split_context(&search_bar_context, &left_panel_context, 30, FIRST, VERTICAL);
+            split_context(&time_bar_context, &right_panel_context, 30, FIRST, VERTICAL);
+            split_context(&label_context, &right_panel_context, 20, SECOND, VERTICAL);
 
             need_split = 0;
         }
@@ -246,15 +285,18 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             sucessful *= draw_label(label_text, &label_context);
             sucessful *= draw_list(elements, elements_length, &list_context);
 
-            if (is_emptyw(search_text))
+            if (!is_emptyw(search_text))
                 sucessful *= draw_text_box(search_text, &search_bar_context);
             else
                 sucessful *= draw_text_box(default_search_text, &search_bar_context);
 
-            if (is_emptyw(time_text))
+            if (!is_emptyw(time_text))
                 sucessful *= draw_text_box(time_text, &time_bar_context);
             else
                 sucessful *= draw_text_box(default_time_text, &time_bar_context);
+
+            if (is_popup_on)
+                sucessful *= draw_message_dialog(dialog_text, &dialog_context);
 
             need_draw = 0;
             refresh();
