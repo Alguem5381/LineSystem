@@ -8,6 +8,7 @@
 //Handles
 #include <main_handle.h>
 #include <search_handle.h>
+#include <login_handle.h>
 
 int init_ncurses()
 {
@@ -72,7 +73,7 @@ int main()
 
     if (!init_style(&style))
     {
-        printf("Falha ao iniciar os estilo\n");
+        printf("Falha ao iniciar o estilo\n");
         result = 0;
     }
 
@@ -92,6 +93,10 @@ int main()
 
         case state_search:
             current_state = init_search_handle(&style);
+            break;
+
+        case state_login:
+            current_state = init_login_handle(&style);
             break;
 
         case state_exit:
