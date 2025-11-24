@@ -51,3 +51,12 @@ int remove_lastw(wchar_t string[])
     string[length - 1] = L'\0';
     return 1;
 }
+
+int add_lastw(wchar_t string[], int buffer_length, wchar_t character)
+{
+    if (wcslen(string) >= buffer_length)
+        return 0;
+
+    wcsncat(string, &character, 1);
+    return 1;
+}
