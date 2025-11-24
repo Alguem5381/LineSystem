@@ -15,4 +15,6 @@ int remove_lastw(wchar_t string[]);
 
 int add_lastw(wchar_t string[], int length, wchar_t character);
 
+int is_emptyw(wchar_t string[]);
+
 #endif //LETTER_H

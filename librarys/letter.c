@@ -60,3 +60,8 @@ int add_lastw(wchar_t string[], int buffer_length, wchar_t character)
     wcsncat(string, &character, 1);
     return 1;
 }
+
+int is_emptyw(wchar_t string[])
+{
+    return !string[0];
+}
