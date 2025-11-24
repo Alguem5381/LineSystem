@@ -7,7 +7,7 @@ States init_search_handle(Style const *style)
     void *persistence[] = {NULL, NULL, NULL};
 
     //Estado da página
-    int state = 0;
+    int page_state = 0;
 
     //Vetores que serão usados
     wchar_t infomations[] = L"Nada ainda1";
@@ -22,7 +22,7 @@ States init_search_handle(Style const *style)
 
     while(running)
     {
-        PageResult result = init_search_page(style, &persistence[state], state, infomations, elements, elements_length);
+        PageResult result = init_search_page(style, &persistence[page_state], page_state, infomations, elements, elements_length);
 
         //Manipulação do resultado da página
 
