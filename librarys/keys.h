@@ -14,6 +14,7 @@ typedef enum Key
     down,
     left,
     right,
+    number,
     common
 } Key;
 

@@ -1,42 +1,43 @@
 #include <letter.h>
 
-int is_letter(char const letter)
+int is_letter(char const character)
 {
-    if (letter >= 'a' && letter <= 'z' || letter >= 'A' && letter <= 'Z')
+    if (character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z' || character == ' ')
         return 1;
 
     return 0;
 }
 
-int is_wletter(wchar_t const letter)
+int is_wletter(wchar_t const character)
 {
-    if (letter >= L'a' && letter <= L'z' || 
-        letter >= L'A' && letter <= L'Z' ||
-        letter >= L'À' && letter <= L'Ã' ||
-        letter >= L'à' && letter <= L'ã' ||
-        letter >= L'Ç' && letter <= L'Ê' ||
-        letter >= L'ç' && letter <= L'ê' ||
-        letter >= L'Ì' && letter <= L'Î' ||
-        letter >= L'ì' && letter <= L'î' ||
-        letter >= L'Ò' && letter <= L'Õ' ||
-        letter >= L'ò' && letter <= L'õ' ||
-        letter >= L'Ù' && letter <= L'Û' ||
-        letter >= L'ù' && letter <= L'û'
+    if (character >= L'a' && character <= L'z' || 
+        character >= L'A' && character <= L'Z' ||
+        character >= L'À' && character <= L'Ã' ||
+        character >= L'à' && character <= L'ã' ||
+        character >= L'Ç' && character <= L'Ê' ||
+        character >= L'ç' && character <= L'ê' ||
+        character >= L'Ì' && character <= L'Î' ||
+        character >= L'ì' && character <= L'î' ||
+        character >= L'Ò' && character <= L'Õ' ||
+        character >= L'ò' && character <= L'õ' ||
+        character >= L'Ù' && character <= L'Û' ||
+        character >= L'ù' && character <= L'û' ||
+        character == L' '
     )
         return 1;
     return 0;
 }
 
-int is_number(char const letter)
+int is_number(char const character)
 {
-    if (letter >= '0' && letter <= '9')
+    if (character >= '0' && character <= '9')
         return 1;
     return 0;
 }
 
-int is_wnumber(wchar_t const letter)
+int is_wnumber(wchar_t const character)
 {
-    if (letter >= L'0' && letter <= L'9')
+    if (character >= L'0' && character <= L'9')
         return 1;
     return 0;
 }
