@@ -83,10 +83,10 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             time_bar_context.element_in_focus = 1;
         }
 
-        if (memory->search_text[0] != '\0')
+        if (is_emptyw(memory->search_text))
             wcscpy(search_text, memory->search_text);
 
-        if (memory->time_text[0] != '\0')
+        if (is_emptyw(memory->time_text))
             wcscpy(time_text, memory->time_text);
     }
 
@@ -246,12 +246,12 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             sucessful *= draw_label(label_text, &label_context);
             sucessful *= draw_list(elements, elements_length, &list_context);
 
-            if (search_text[0] != '\0')
+            if (is_emptyw(search_text))
                 sucessful *= draw_text_box(search_text, &search_bar_context);
             else
                 sucessful *= draw_text_box(default_search_text, &search_bar_context);
 
-            if (time_text[0] != '\0')
+            if (is_emptyw(time_text))
                 sucessful *= draw_text_box(time_text, &time_bar_context);
             else
                 sucessful *= draw_text_box(default_time_text, &time_bar_context);
