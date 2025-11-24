@@ -6,12 +6,15 @@
 #include <letter.h>
 #include <keys.h>
 
+//(D)Default (B)Buffer (L) Length
+#define DBL 256
+
 // Struct para memória persistente
 
 typedef struct Persistence
 {
-    wchar_t search_text[256];
-    wchar_t time_text[256];
+    wchar_t search_text[DBL];
+    wchar_t time_text[DBL];
     int list_select;
     int is_search_bar_selected;
 } Persistence;
@@ -22,7 +25,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
 {
     PageResult result = {0};
 
-    // Contextos
+    // Contextos com definições padrões
     DrawContext general_context = {
         .width = 100,
         .height = 100};
@@ -48,12 +51,12 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     set_style(style, &label_context);
 
     // Vetores utilizados
-    wchar_t default_search_text[256];
-    wchar_t default_time_text[256];
+    wchar_t default_search_text[DBL];
+    wchar_t default_time_text[DBL];
 
-    wchar_t title_text[256];
-    wchar_t search_text[256] = L"\0";
-    wchar_t time_text[256] = L"\0";
+    wchar_t title_text[DBL];
+    wchar_t search_text[DBL] = L"\0";
+    wchar_t time_text[DBL] = L"\0";
 
     wchar_t *keys[] = {L"Esc", L"↑", L"↓", L"←", L"→", L"↵"};
     wchar_t *options[] = {L"Sair", L"Subir", L"Descer", L"Direita", L"Esquerda", L"Selecionar"};
@@ -88,7 +91,6 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     }
 
     // Aplicando estado
-
     switch (state)
     {
     case 0:
@@ -175,13 +177,13 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
         case common:
             if (search_bar_context.element_in_focus)
             {
-                wcsncat(search_text, &character, 1);
+                add_lastw(search_text, DBL, character);
                 result.action = page_action_text;
                 wcscpy(result.text, search_text);
                 running = 0;
             }
             else
-                wcsncat(time_text, &character, 1);
+                add_lastw(time_text, DBL, character);
 
             need_draw = 1;
             break;
