@@ -48,9 +48,10 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     set_style(style, &label_context);
 
     // Vetores utilizados
-    wchar_t default_search_text[] = L"Pesquise uma parada";
-    wchar_t default_time_text[] = L"Hora de saída. (Ex: 11h30m)";
+    wchar_t default_search_text[256];
+    wchar_t default_time_text[256];
 
+    wchar_t title_text[256];
     wchar_t search_text[256] = L"\0";
     wchar_t time_text[256] = L"\0";
 
@@ -60,14 +61,19 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     // Tamanho dos vetores
     int keys_length = sizeof(keys) / sizeof(keys[0]);
 
-    // Usando a memória persistente
+    // Recuperando memória persistente
     Persistence *memory = NULL;
 
     if ((*persistence))
     {
         memory = (Persistence*)*persistence;
 
-        list_context.element_in_focus = memory->list_select;
+        // Proteção contra uma possível memória invalida
+        if (memory->list_select < elements_length)
+            list_context.element_in_focus = memory->list_select;
+        else
+            list_context.element_in_focus = 0;
+
         if (!memory->is_search_bar_selected)
         {
             search_bar_context.element_in_focus = 0;
@@ -81,7 +87,33 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             wcscpy(time_text, memory->time_text);
     }
 
-    // Para capituras de teclas
+    // Aplicando estado
+
+    switch (state)
+    {
+    case 0:
+        wcscpy(title_text, L"Busca de rotas - Origem");
+        wcscpy(default_search_text, L"Pesquise uma parada incial");
+        wcscpy(default_time_text, L"Hora de saída. (Ex: 11h30m)");
+        break;
+
+    case 1:
+        wcscpy(title_text, L"Busca de rotas - Destino");
+        wcscpy(default_search_text, L"Pesquise uma parada de destino");
+        wcscpy(default_time_text, L"Hora de chegada. (Ex: 19h10m)");
+        break;
+
+    case 2:
+        wcscpy(title_text, L"Busca de rotas - Resultado");
+        wcscpy(default_search_text, L"Pesquise uma parada de destino");
+        wcscpy(default_time_text, L"Hora de chegada. (Ex: 19h10m)");
+        break;
+    
+    default:
+        break;
+    }
+
+    // Para capitura teclas
     Key key = unknown;
     wint_t character;
 
@@ -207,7 +239,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
         if (need_draw)
         {
             int sucessful = 1;
-            sucessful *= draw_base_page(L"Buscar rotas - origem", &general_context);
+            sucessful *= draw_base_page(title_text, &general_context);
             sucessful *= draw_footer(keys, options, keys_length, &general_context);
             sucessful *= draw_label(label_text, &label_context);
             sucessful *= draw_list(elements, elements_length, &list_context);

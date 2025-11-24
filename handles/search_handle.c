@@ -4,8 +4,7 @@
 
 States init_search_handle(Style const *style)
 {
-    //Ponteiro para memória persistente da página
-    void *persistence = NULL;
+    void *persistence[] = {NULL, NULL, NULL};
 
     //Estado da página
     int state = 0;
@@ -23,7 +22,7 @@ States init_search_handle(Style const *style)
 
     while(running)
     {
-        PageResult result = init_search_page(style, &persistence, state, infomations, elements, elements_length);
+        PageResult result = init_search_page(style, &persistence[state], state, infomations, elements, elements_length);
 
         //Manipulação do resultado da página
 
@@ -39,11 +38,8 @@ States init_search_handle(Style const *style)
         }
     }
 
-    if (!persistence)
-    {
-        free(persistence);
-        persistence = NULL;
-    }
+    for(int i = 0; i < 3; i++)
+        free(persistence[i]);
 
     return state;
 }
