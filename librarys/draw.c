@@ -93,9 +93,19 @@ int draw_text_box(wchar_t const *text, DrawContext const *context)
     mvaddnwstr(coordinates.vertical_middle, coordinates.initial_x + 1, text, coordinates.width - 2);
     attroff(COLOR_PAIR(context->default_pair_color));
 
-    attron(COLOR_PAIR(context->default_border_color));
-    draw_frame_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
-    attroff(COLOR_PAIR(context->default_border_color));
+    //Nesse caso, o elemento em foco é usado diferente. Caso seja diferente de 0, a caixa fica com a borda em foco
+    if (context->element_in_focus)
+    {
+        attron(COLOR_PAIR(context->on_focus_border_color));
+        draw_frame_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
+        attroff(COLOR_PAIR(context->on_focus_border_color));
+    }
+    else
+    {
+        attron(COLOR_PAIR(context->default_border_color));
+        draw_frame_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
+        attroff(COLOR_PAIR(context->default_border_color));
+    }
 
     return 1;
 }
