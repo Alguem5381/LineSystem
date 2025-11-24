@@ -21,7 +21,7 @@ typedef struct Persistence
 
 // Inicializador da página
 
-PageResult init_search_page(Style const *style, void **persistence, int state, wchar_t const *label_text, wchar_t *elements[], int const elements_length)
+PageResult init_search_page(Style const *style, void **persistence, int state, int throw_popup, wchar_t const *label_text, wchar_t *elements[], int const elements_length)
 {
     PageResult result = {0};
 
@@ -112,8 +112,8 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
 
     case 2:
         wcscpy(title_text, L"Busca de rotas - Resultado");
-        wcscpy(default_search_text, L"Pesquise uma parada de destino");
-        wcscpy(default_time_text, L"Hora de chegada. (Ex: 19h10m)");
+        wcscpy(default_search_text, L"\0");
+        wcscpy(default_time_text, L"\0");
         break;
     
     default:
@@ -128,7 +128,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     int need_draw = 1;
     int need_split = 1;
     int running = 1;
-    int is_popup_on = 0;
+    int is_popup_on = throw_popup;
 
     while (running)
     {
@@ -245,7 +245,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
             break;
         }
 
-        // Definição das coordendas dos contextos
+        // Definição das coordenadas dos contextos
         if (need_split)
         {
             general_context.startx = 0;
@@ -313,7 +313,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, w
     // Se não tiver nada na memória, então a página cria uma nova
     if (!memory)
     {
-        memory = (Persistence *)malloc(sizeof(Persistence));
+        memory = (Persistence*)malloc(sizeof(Persistence));
 
         if (!memory)
         {
