@@ -11,4 +11,6 @@ int is_number(char const letter);
 
 int is_wnumber(wchar_t const letter);
 
+int remove_lastw(wchar_t string[]);
+
 #endif //LETTER_H
