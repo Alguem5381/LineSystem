@@ -13,4 +13,6 @@ int is_wnumber(wchar_t const letter);
 
 int remove_lastw(wchar_t string[]);
 
+int add_lastw(wchar_t string[], int length, wchar_t character);
+
 #endif //LETTER_H
