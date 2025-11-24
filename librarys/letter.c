@@ -40,3 +40,14 @@ int is_wnumber(wchar_t const letter)
         return 1;
     return 0;
 }
+
+int remove_lastw(wchar_t string[])
+{
+    int length = wcslen(string);
+
+    if (!length)
+        return 0;
+
+    string[length - 1] = L'\0';
+    return 1;
+}
