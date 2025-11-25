@@ -5,14 +5,28 @@ int search_to_array(Object *information, wchar_t ***array, int *array_length,
                     wchar_t *string) {
   SLL_Node *node;
   *array_length = 0;
+  *array = NULL;
 
   for (node = information->SLL->head; node != NULL; node = node->next) {
-    if (like((wchar_t *)node->info, string)) {
-      wcscpy(
-          *array[*array_length],
-          (wchar_t *)node->info); // usar o array_lenth para acessar a posicao
-                                  // livre do array (Genial eu sei heheheheh)
-      *array_length++;
+    Node *inicial = (((BusLine *)(node->info))->list->head);
+    Node *current = inicial;
+    if (current != NULL) {
+      do {
+        if (like((wchar_t *)(current->info->nome), string)) {
+          wchar_t **tmp =
+              realloc(*array, sizeof(wchar_t *) * (*array_length + 1));
+
+          if (!tmp)
+            return 0;
+
+          *array = tmp;
+
+          (*array)[*array_length] = (wchar_t *)current->info->nome;
+
+          (*array_length)++;
+        }
+        current = current->next;
+      } while (current != inicial);
     }
   }
 
@@ -20,17 +34,16 @@ int search_to_array(Object *information, wchar_t ***array, int *array_length,
 }
 
 int like(wchar_t *search, wchar_t *string) {
-  for (wchar_t *srch = search, *str = string; str!=NULL; str++) {
-        if(*srch == *str){ // procurar em string algum carectere que seja igual ao primeiro caracter de search
-            for( ;srch!=NULL;srch++,str++){ // quando achado faz um for a partir dele caracter
-                if(str==NULL) // caso string chegue ao fim retorna 0
-                    return 0;
-                if(*srch!=*str) // caso string eh diferente de search retorna 0
-                    return 0;
-            }
-            return 1; // retornara 1 caso search chegou ao fim e todos os caracteres foram iguais ao q tem em string
-        }
+  if (!search || !string)
+    return 0;
+
+  size_t len = wcslen(search);
+
+  for (const wchar_t *p = string; *p != L'\0'; p++) {
+    if (wcsncmp(p, search, len) == 0)
+      return 1;
   }
+  return 0;
 }
 
 wchar_t *search_route(Object *information, wchar_t *first_stop,
