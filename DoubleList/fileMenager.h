@@ -30,11 +30,6 @@ typedef struct Object
     linkedList *SLL;
 }Object;
 
-int comp(BusStop *data1, BusStop *data2) {
-  if (strcmp(data1->nome, data2->nome))
-    return 1;
-  return 0;
-}
 
 int createObject(Object *obj);
 int init(Object *object);

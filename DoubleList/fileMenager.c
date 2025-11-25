@@ -2,6 +2,11 @@
 #include "doubleList.h"
 #include <string.h>
 
+int comp(BusStop *data1, BusStop *data2) {
+  if (strcmp(data1->nome, data2->nome))
+    return 1;
+  return 0;
+}
 
 int init(Object *object)
 {
@@ -16,7 +21,7 @@ int init(Object *object)
     linkedList *LL = (linkedList*)malloc(sizeof(linkedList));
     if (!LL)
         return 0;
-    
+
     object->SLL = LL;
     LL->head = NULL;
     handleManeger(object, file);
@@ -57,7 +62,7 @@ int handleManeger(Object *object, FILE *file){
 
         strncpy(temp->enterprise, enterprise, sizeof(temp->enterprise)-1);
         temp->enterprise[sizeof(temp->enterprise)-1] = '\0';
-        
+
         openLine(name, temp);
         initInsert(object->SLL, temp);
     }
@@ -70,7 +75,7 @@ int openLine(char *str, BusLine *list){
     strcat(line, ".dat");
 
     FILE *file = fopen(line, "rb");
-    
+
     if(!file){
         printf("%s nao exite.", line);
         file = fopen(line, "w");
@@ -136,7 +141,7 @@ int saveLine(linkedList *ll){
 }
 
 int saveStops(DoubleList *dl, char *path){
-    
+
     if(!dl)
         return 0;
 
