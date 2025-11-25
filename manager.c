@@ -1,5 +1,5 @@
 #define _XOPEN_SOURCE_EXTENDED 1
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include <states.h>
 #include <style.h>
 #include <locale.h>
@@ -60,7 +60,7 @@ int main()
     //Structs
     Style style;
 
-    //Funções de configuração do programa e structs 
+    //Funções de configuração do programa e structs
 
     int result = 1;
 
@@ -97,7 +97,7 @@ int main()
         case state_exit:
             running = 0;
             break;
-        
+
         default:
             break;
         }

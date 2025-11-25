@@ -1,5 +1,5 @@
 #define _XOPEN_SOURCE_EXTENDED 1
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include <main_page.h>
 #include <draw.h>
 
@@ -17,10 +17,10 @@ PageResult init_main_page(Style const *style)
         .width = 100,
         .height = 100
     };
-    DrawContext list_context = 
+    DrawContext list_context =
     {
         .element_in_focus = 0,
-        .width = 90, 
+        .width = 90,
         .height = 90
     };
 
