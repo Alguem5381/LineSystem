@@ -14,30 +14,30 @@ typedef struct Hours
     int minutes;
 } Hours;
 
-/// @brief Função para verificar se o horário dentro da string é válido. (Ex: 19h30m)
+/// @brief Função para verificar se o horário está entre 23h59m e 0h0m. (Ex: 19h30m)
+/// @param time O horário
+/// @return Retorna 1 se for válido ou 0 caso contrário
+int is_valid_time(const Hours time);
+
+/// @brief Função para verificar se o horário dentro da string é válido. (Ex: XXhXXm)
 /// @param string A string
 /// @return Retorna 1 se for válido ou 0 caso contrário
-int is_valid_time(const wchar_t *string);
+/// @warning Essa função verifica somente o formato. Logo valores incorretos (Ex: 99h99m) não causaram falhas.
+int is_valid_format(const wchar_t *string);
 
 /// @brief Função para escrever um horário em uma string.
-/// @param string A string
-/// @param string_length O tamanho da string
+/// @param buffer A string
+/// @param buffer_length O tamanho da string
 /// @param time O horário
 /// @return Retorna 1 se sucesso ou 0 em caso de falha
-int time_to_string(wchar_t *string, const int string_length, const Hours time);
+/// @warning O tamanho do buffer deve levar em conta o '\0'. Logo é esperado um buffer de tamanho 7
+int time_to_string(wchar_t *buffer, const int buffer_length, const Hours time);
 
 /// @brief Função para colocar um horário de uma string em uma variável de horário.
 /// @param string A string
 /// @param time O ponteiro para o horário
 /// @return Retorna 1 se sucesso ou 0 em caso de falha
 int string_to_time(const wchar_t *string, Hours *time);
-
-/// @brief Função para conseguir o horário seguinte mais próximo de um horário alvo em um vetor de horários
-/// @param array O vetor de horários
-/// @param array_lenght O tamanho do vetor
-/// @param target O horário alvo
-/// @return Retorna a posição no vetor se sucesso ou -1 em caso de falha
-int get_next_nearest_time(Hours *array, int array_lenght, Hours target);
 
 /// }@ Fim do grupo Hours
 
