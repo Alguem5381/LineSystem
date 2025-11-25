@@ -4,6 +4,6 @@
 #include <states.h>
 #include <style.h>
 
-States init_login_handle(Style const *style);
+HandleResult init_login_handle(Style const *style);
 
 #endif //LOGIN_HANDLE_H
