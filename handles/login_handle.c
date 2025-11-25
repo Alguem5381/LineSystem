@@ -9,7 +9,7 @@ int is_valid_password(wchar_t *password)
     return 0;
 }
 
-States init_login_handle(Style const *style)
+HandleResult init_login_handle(Style const *style)
 {
     void *persistence = NULL;
 
@@ -26,7 +26,7 @@ States init_login_handle(Style const *style)
 
     //Loop principal
     int running = 1;
-    States state;
+    HandleResult handle_result;
 
     while(running)
     {
@@ -39,7 +39,7 @@ States init_login_handle(Style const *style)
         //Caso seja uma ação de voltar
         case page_action_back:
             running = 0;
-            state = state_main;
+            handle_result.state = state_main;
             break;
 
         //Caso seja um texto
@@ -48,7 +48,7 @@ States init_login_handle(Style const *style)
                 args.throw_popup = 1;
             else
             {
-                state = state_main;
+                handle_result.state = state_line;
                 running = 0;
             }
             break;
@@ -60,5 +60,5 @@ States init_login_handle(Style const *style)
 
     free(persistence);
 
-    return state;
+    return handle_result;
 }
