@@ -83,7 +83,7 @@ int main()
 
     HandleResult handle_result = {
         .state = state_main,
-        .value = 0
+        .value = NULL
     };
 
     while(running)
