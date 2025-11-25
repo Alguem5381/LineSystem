@@ -48,4 +48,41 @@ int like(wchar_t *search, wchar_t *string) {
 
 wchar_t *search_route(Object *information, wchar_t *first_stop,
                       wchar_t *second_stop, Hours departure_time,
-                      Hours arrival_time);
+                      Hours arrival_time) {
+  SLL_Node *fNode;
+
+  for (fNode = information->SLL->head; fNode != NULL; fNode = fNode->next) {
+    Node *inicial = (((BusLine *)(fNode->info))->list->head);
+    Node *arrNode = inicial;
+    if (arrNode != NULL) {
+      do {
+        if (like((wchar_t *)(arrNode->info->nome), second_stop)) {
+          Node *deparNode = arrNode;
+          for (deparNode = deparNode->prev; deparNode != arrNode;
+               deparNode = deparNode->prev) {
+            if (like((wchar_t *)(deparNode->info->nome), first_stop) &&
+                deparNode->info->departure_time.hours == departure_time.hours &&
+                deparNode->info->departure_time.minutes ==
+                    departure_time.minutes) {
+              wchar_t *resultado = malloc(sizeof(wchar_t) * 512);
+              swprintf(resultado, 512,
+                       L"%ls para %ls\n\nHorario de saída: %d:%d\nHorario de "
+                       L"chegada: %d:%d\n\nLinha: %d\nNome da companhia: %ls",
+                       first_stop, second_stop,
+                       deparNode->info->departure_time.hours,
+                       deparNode->info->departure_time.minutes,
+                       deparNode->info->arrival_time.hours,
+                       deparNode->info->arrival_time.minutes,
+                       ((BusLine *)fNode->info)->enterprise_ID,
+                       ((BusLine *)fNode->info)->enterprise);
+
+              return resultado;
+            }
+          }
+        }
+        arrNode = arrNode->next;
+      } while (arrNode != inicial);
+    }
+  }
+  return L"Não foi possível encontrar";
+}
