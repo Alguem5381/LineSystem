@@ -81,22 +81,29 @@ int main()
 
     int running = result;
 
-    States current_state = state_main;
+    HandleResult handle_result = {
+        .state = state_main,
+        .value = 0
+    };
 
     while(running)
     {
-        switch (current_state)
+        switch (handle_result.state)
         {
         case state_main:
-            current_state = init_main_handle(&style);
+            handle_result = init_main_handle(&style);
             break;
 
         case state_search:
-            current_state = init_search_handle(&style);
+            handle_result = init_search_handle(&style);
             break;
 
         case state_login:
-            current_state = init_login_handle(&style);
+            handle_result = init_login_handle(&style);
+            break;
+
+        case state_line:
+            
             break;
 
         case state_exit:
