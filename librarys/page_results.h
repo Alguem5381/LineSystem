@@ -22,7 +22,7 @@ typedef struct PageResult
 
 typedef struct PageArgs 
 {
-    Style *style;
+    const Style *style;
     void **persistence;
     int state;
     int throw_popup;
