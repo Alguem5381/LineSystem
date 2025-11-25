@@ -4,6 +4,6 @@
 #include <states.h>
 #include <style.h>
 
-States init_line_handle(Style const *style);
+HandleResult init_line_handle(Style const *style);
 
 #endif //LINE_HANDLE_H
