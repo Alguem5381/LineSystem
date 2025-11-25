@@ -1,133 +1,138 @@
 #include "fileMenager.h"
-#include "doubleList.h"
+#include "object.h"
+
 #include <string.h>
 
 
-int init(Object *object)
+int loadFromFile(Object *object)
 {
+    if (!object) return 0;
+
     FILE *file;
-    if(!openFileHandle(&file))
+    if (!openFileHandle(&file))
         return 0;
 
-    if(object->SLL != NULL){
+    
+    if (!handleManeger(object, file)) {      
+        object->SLL = NULL;
+        fclose(file);
         return 0;
     }
 
-    linkedList *LL = (linkedList*)malloc(sizeof(linkedList));
-    if (!LL)
-        return 0;
-    
-    object->SLL = LL;
-    LL->head = NULL;
-    handleManeger(object, file);
     fclose(file);
     return 1;
+
 }
 
-int openFileHandle(FILE **file){
-    printf("4\n");
+int openFileHandle(FILE **file) {
     *file = fopen(HANDLE_NAME, "r");
-
-    if(!*file)
-    {
-        printf("5\n");
+    if (!*file) {
         *file = fopen(HANDLE_NAME, "w+");
-
-        if (!*file){
-            printf("6\n");
-            return 0;}
-        else
-            return 1;
+        if (!*file) return 0;
     }
     return 1;
 }
 
-int handleManeger(Object *object, FILE *file){
+
+int handleManeger(Object *object, FILE *file) {
     char buffer[255];
     BusLine *temp;
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+
+    while (fgets(buffer, sizeof(buffer), file)) {
         buffer[strcspn(buffer, "\r\n")] = '\0';
-        temp = (BusLine*)malloc(sizeof(BusLine));
+
+        temp = malloc(sizeof(BusLine));
+        if (!temp) return 0;
 
         char *name = strtok(buffer, ",");
         char *enterprise = strtok(NULL, ",");
+
+        if (!name || !enterprise) {
+            free(temp);
+            continue; 
+        }
 
         strncpy(temp->name, name, sizeof(temp->name)-1);
         temp->name[sizeof(temp->name)-1] = '\0';
 
         strncpy(temp->enterprise, enterprise, sizeof(temp->enterprise)-1);
         temp->enterprise[sizeof(temp->enterprise)-1] = '\0';
-        
-        openLine(name, temp);
-        initInsert(object->SLL, temp);
+
+        if (!openLine(name, temp) || !initInsert(object->SLL, temp)) {
+            free(temp);
+            return 0;
+        }
     }
     return 1;
 }
 
 int openLine(char *str, BusLine *list){
-    char line[50] = "lines/";
-    strcat(line, str);
-    strcat(line, ".dat");
+    char line[50];
+    if(snprintf(line, sizeof(line), "lines/%s.dat", str)>= sizeof(line))
+        return 0;
 
     FILE *file = fopen(line, "rb");
     
     if(!file){
-        printf("%s nao exite.", line);
-        file = fopen(line, "w");
+        file = fopen(line, "wb+");
         if (!file)
             return 0;
     }
+
     list->list = malloc(sizeof(DoubleList));
+    if (!list->list)
+    {
+        fclose(file);
+        return 0;
+    }
+    
     create(list->list);
 
     BusStop temp;
-    while (fread(&temp, sizeof(BusStop), 1, file) == 1)
-    {
+    while (fread(&temp, sizeof(BusStop), 1, file) == 1){
+
          BusStop *novo = malloc(sizeof(BusStop));
+        if (!novo){
+            
+            fclose(file);
+            return 0;
+        }
+        
         *novo = temp;
 
-        add(list->list, novo);
+        if(!add(list->list, novo)){
+            free(novo);
+            fclose(file);
+            return 0;
+        }
     }
 
     fclose(file);
     return 1;
 }
 
-int saveObject(Object *obj){
-    printf("1\n");
-    if(!obj)
+int saveToFile(Object *obj){
+    if(!obj || !saveLine(obj))
         return 0;
-    if(!saveLine(obj->SLL)){
-        printf("Erro ao salvar.");
-        return 0;
-    }
     return 1;
 }
 
-int saveLine(linkedList *ll){
-    printf("2\n");
+int saveLine(Object *ll){
     FILE *file = fopen(HANDLE_NAME, "w+");
 
-    if(!file){
-        perror("Erro fopen w+");
-        printf("HANDLE_NAME = '%s'\n", HANDLE_NAME);
-        printf("3\n");
-        if(!openFileHandle(&file))
-        {
-            printf("Opa, to aqui.");
-            return 0;
-        }
-        else
-            file = fopen(HANDLE_NAME, "w+");
-    }
-    SLL_Node *curr = ll->head;
+    if(!file)
+        return 0;
+    SLL_Node *curr = ll->SLL->head;
     while(curr)
     {
         char line[50] = "lines/";
         BusLine *DL = ((BusLine*)curr->info);
+        if(!DL) continue;
+        
+        if(snprintf(line, sizeof(line), "lines/%s.dat", DL->name) >= sizeof(line))
+            continue;
+        
         fprintf(file,"%s,%s\n", DL->name, DL->enterprise);
-        strcat(line, DL->name);
-        strcat(line, ".dat");
         saveStops(DL->list, line);
         curr = curr->next;
     }
@@ -136,26 +141,20 @@ int saveLine(linkedList *ll){
 }
 
 int saveStops(DoubleList *dl, char *path){
-    
-    if(!dl)
+    if(!dl|| !path)
         return 0;
-
+    
     FILE *file = fopen(path, "wb");
 
     if(!file)
-    {
-        printf("%s nao exite.", path);
-            return 0;
-    }
+        return 0;
 
     Node *curr = dl->head;
-    int i= 0;
-
-    while (i < dl->size)
+    
+    for (int i = 0; i < dl->size; i++)
     {
         fwrite(curr->info, sizeof(DataType), 1, file);
         curr = curr->next;
-        i++;
     }
 
     fclose(file);
@@ -163,14 +162,11 @@ int saveStops(DoubleList *dl, char *path){
 }
 
 int removeLine(char *path){
-    char line[50] = "lines/";
-    strcat(line, path);
-    if (remove(line) == 0) {
-        printf("Arquivo binário deletado!\n");
-        return 1;
-    } else {
-        perror("Erro ao deletar arquivo binário");
-        return 0;
-    }
+    if (!path) return 0;
 
+    char line[50];
+    if (snprintf(line, sizeof(line), "lines/%s.dat", path) >= sizeof(line))
+        return 0;
+
+    return remove(line) == 0;
 }
