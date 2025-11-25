@@ -16,7 +16,7 @@ int free_elements(wchar_t *elements[], int elements_length)
         free(elements[index]);
 }
 
-States init_search_handle(Style const *style)
+HandleResult init_search_handle(Style const *style)
 {
     void *persistence[] = {NULL, NULL};
     int current_persistence = 0;
@@ -40,7 +40,7 @@ States init_search_handle(Style const *style)
 
     //Loop principal
     int running = 1;
-    States state;
+    HandleResult handle_result;
 
     while(running)
     {
@@ -60,7 +60,7 @@ States init_search_handle(Style const *style)
 
                 //E finaliza
                 running = 0;
-                state = state_main;
+                handle_result.state = state_main;
                 break;
 
             case 1:
@@ -169,5 +169,5 @@ States init_search_handle(Style const *style)
     for(int i = 0; i < 3; i++)
         free(persistence[i]);
 
-    return state;
+    return handle_result;
 }
