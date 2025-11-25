@@ -91,7 +91,7 @@ int main()
             break;
 
         case state_search:
-            current_state = init_search_handle(&style);
+            // current_state = init_search_handle(&style);
             break;
 
         case state_exit:
