@@ -2,7 +2,7 @@
 #include <main_page.h>
 #include <stdlib.h>
 
-States init_main_handle(Style const *style)
+HandleResult init_main_handle(Style const *style)
 {
     PageArgs args =
     {
@@ -14,7 +14,11 @@ States init_main_handle(Style const *style)
 
     //Variaveis do loop
     int running = 1;
-    States state;
+    HandleResult handle_result =
+    {
+        .state = state_exit,
+        .value = 0
+    };
 
     while(running)
     {
@@ -25,7 +29,7 @@ States init_main_handle(Style const *style)
         switch (result.action)
         {
         case page_action_back:
-            state = state_exit;
+            handle_result.state = state_exit;
             running = 0;
             break;
 
@@ -33,11 +37,11 @@ States init_main_handle(Style const *style)
             switch (result.selected_index)
             {
             case 0: 
-                state = state_search;
+                handle_result.state = state_search;
                 break;
 
             case 1: 
-                state = state_login; 
+                handle_result.state = state_login; 
                 break;
 
             default:
@@ -52,5 +56,5 @@ States init_main_handle(Style const *style)
         }
     }
 
-    return state;
+    return handle_result;
 }
