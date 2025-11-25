@@ -9,4 +9,10 @@ typedef enum States
     state_login
 } States;
 
+typedef struct HandleResult
+{
+    int value;
+    States state;
+} HandleResult;
+
 #endif //STATES_H
