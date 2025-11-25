@@ -4,8 +4,13 @@
 
 States init_main_handle(Style const *style)
 {
-    //Loop principal
-    void *persistence = NULL;
+    PageArgs args =
+    {
+        .style = style,
+        .persistence = NULL,
+        .state = 0,
+        .throw_popup = 0
+    };
 
     //Variaveis do loop
     int running = 1;
@@ -13,7 +18,7 @@ States init_main_handle(Style const *style)
 
     while(running)
     {
-        PageResult result = init_main_page(style, &persistence);
+        PageResult result = init_main_page(args);
 
         //Manipulação do resultado da página
 
@@ -45,12 +50,6 @@ States init_main_handle(Style const *style)
         default:
             break;
         }
-    }
-
-    if (!persistence)
-    {    
-        free(persistence);
-        persistence = NULL;
     }
 
     return state;
