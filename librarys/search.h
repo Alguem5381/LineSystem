@@ -15,6 +15,12 @@
 /// @return Retorna 1 se for possível montar o vetor e 0 em caso de falha
 int search_to_array(Object *information, wchar_t ***array, int *array_length, wchar_t *string);
 
+/// @brief Função para comparar 2 wchar.
+/// @param search Um ponteiro para wchar_t que sera buscado na string
+/// @param string Um ponteiro para wchar_t que tera a palavra em que a busca sera feita
+/// @return Retorna 1 se for parecido(tenha pelo menos alguma parte da parecida) e 0 caso nao seja parecido
+int like(wchar_t *search,wchar_t *string);
+
 /// @brief Função para buscar uma rota entre duas paradas com horários alvos de saida e chegadas e retornar uma string com todas as informações dessa rota.
 /// @param information Os dados para a busca
 /// @param first_stop O nome da primeira parada
