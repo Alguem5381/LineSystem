@@ -15,7 +15,7 @@ typedef enum States
 
 typedef struct HandleResult
 {
-    int value;
+    wchar_t *value;
     States state;
 } HandleResult;
 
