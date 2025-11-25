@@ -1,5 +1,5 @@
 #define _XOPEN_SOURCE_EXTENDED 1
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include <draw.h>
 
 typedef struct Coordinates

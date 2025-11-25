@@ -21,7 +21,7 @@ int search_to_array(Object *information, wchar_t ***array, int *array_length, wc
 /// @param second_stop O nome da segunda parada
 /// @param departure_time O horário de saida esperado
 /// @param arrival_time O horário de chegada esperado
-/// @return Retorna uma string contendo as informações caso encontrar ou uma string com o aviso de falha na busca(Ex: "Não foi possível encontrar"). 
+/// @return Retorna uma string contendo as informações caso encontrar ou uma string com o aviso de falha na busca(Ex: "Não foi possível encontrar").
 wchar_t *search_route(Object *information, wchar_t *first_stop, wchar_t *second_stop, Hours departure_time, Hours arrival_time);
 
 #endif //SEARCH_H
