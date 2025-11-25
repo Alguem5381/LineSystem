@@ -2,19 +2,22 @@
 #include <ncursesw/ncurses.h>
 #include <template_page.h>
 #include <draw.h>
+#include <stdlib.h>
+#include <letter.h>
+#include <keys.h>
 
-void set_style(Style const *style, DrawContext *general_context)
+// (D)Default (B)Buffer (L) Length
+#define DBL 256
+
+// Struct para memória persistente
+typedef struct Persistence
 {
-    general_context->default_border_color = style->default_border_color;
-    general_context->default_pair_color = style->default_pair_color;
-    general_context->divider_color = style->divider_color;
-    general_context->on_focus_border_color = style->on_focus_border_color;
-    general_context->on_focus_pair_color = style->on_focus_pair_color;
-}
+    int some_value;
+} Persistence;
 
-//Inicializador da página
+// Inicializador da página
 
-PageResult init_template_page(Style const *style)
+PageResult init_template_page(PageArgs args)
 {
     PageResult result = {0};
 
@@ -28,7 +31,7 @@ PageResult init_template_page(Style const *style)
     };
 
     //Definição de estilo para os contextos
-    set_style(style, &general_context);
+    set_style(args.style, &general_context);
 
     //Vetores utilizados
     wchar_t *keys[] = {L"Esc", L"↑", L"↓", L"↵"};
@@ -37,28 +40,51 @@ PageResult init_template_page(Style const *style)
     //Tamanho dos vetores
     int keys_length = sizeof(keys) / sizeof(keys[0]);
 
-    //Variaveis para o loop
+    // Recuperando memória persistente
+    Persistence *memory = NULL;
+
+    if (*args.persistence)
+    {
+        memory = (Persistence*)*args.persistence;
+
+        //Usa a memoria
+    }
+
+    // Aplicando estado
+    switch (args.state)
+    {
+    case 0:
+        // Faz algo
+        break;
+    
+    default:
+        break;
+    }
+
+    // Para capitura teclas
+    Key key = unknown;
+    wint_t character;
+
+    // Variaveis para o loop
     int need_draw = 1;
+    int need_split = 1;
     int running = 1;
-    int selected = 0;
-    int character = KEY_RESIZE;
+    int is_popup_on = args.throw_popup;
 
     while(running)
     {
-        switch (character)
+        // Tratamento de teclas
+        switch (key)
         {
-        case KEY_RESIZE:
-        {
+        case resize:
             resize_term(0, 0);
-            general_context.endx = COLS;
-            general_context.endy = LINES;
-
+            need_split = 1;
             need_draw = 1;
-
             break;
-        }
 
-        case 27:
+        case esc:
+            if (is_popup_on) break;
+
             result.action = page_action_back;
             running = 0;
             break;
@@ -67,18 +93,51 @@ PageResult init_template_page(Style const *style)
             break;
         }
 
+        // Definição das coordenadas dos contextos
+        if (need_split)
+        {
+            general_context.startx = 0;
+            general_context.starty = 0;
+            general_context.endx = COLS;
+            general_context.endy = LINES;
+
+            need_split = 0;
+        }
+
+        // Desenho
         if (need_draw)
         {
             int sucessful = 1;
-            sucessful *= draw_base_page(L"Título", &general_context);
-            sucessful *= draw_footer(keys, options, keys_length, &general_context);
+
             need_draw = 0;
             refresh();
         }
 
-        if(running)
-            character = getch();
+        // Capitura de tecla
+        if (running)
+        {
+            int status = get_wch(&character);
+            key = get_key(character, status);
+        }
     }
+
+    // Se não tiver nada na memória, então a página cria uma nova
+    if (!memory)
+    {
+        memory = (Persistence*)malloc(sizeof(Persistence));
+
+        if (!memory)
+        {
+            result.action = page_action_fail;
+            return result;
+        }
+    }
+
+    // Salva o que é necessário na memória
+    memory->some_value = 5;
+
+    // Modifica o ponteiro no handle
+    *args.persistence = memory;
 
     return result;
 }
