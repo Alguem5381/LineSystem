@@ -42,9 +42,14 @@ int string_to_time(const wchar_t *string, Hours *time)
     temp.hours = (string[0] - L'0') * 10 + string[1] - L'0';
     temp.minutes = (string[3] - L'0') * 10 + string[4] - L'0';
 
-    if (is_valid_time(temp)) return 0;
+    if (!is_valid_time(temp)) return 0;
 
     *time = temp;
 
     return 1;
+}
+
+int to_minutes(Hours h) 
+{
+    return h.hours * 60 + h.minutes;
 }

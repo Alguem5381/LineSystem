@@ -39,6 +39,11 @@ int time_to_string(wchar_t *buffer, const int buffer_length, const Hours time);
 /// @return Retorna 1 se sucesso ou 0 em caso de falha
 int string_to_time(const wchar_t *string, Hours *time);
 
+/// @brief Função para tranformar um horas em minutos
+/// @param h O horário
+/// @return Retorna o hórario em minutos
+int to_minutes(Hours h);
+
 /// }@ Fim do grupo Hours
 
 #endif //HOURS_H

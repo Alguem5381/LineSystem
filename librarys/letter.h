@@ -17,4 +17,6 @@ int add_lastw(wchar_t string[], int length, wchar_t character);
 
 int is_emptyw(wchar_t string[]);
 
+int contains_wstr(wchar_t *needle, wchar_t *haystack);
+
 #endif //LETTER_H

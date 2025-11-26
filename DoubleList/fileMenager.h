@@ -7,32 +7,17 @@
 #include "doubleList.h"
 #include <stdio.h>
 #include <string.h>
-
-
-typedef struct Object Object;
-
-typedef struct SLL_Data {
-    DoubleList *list;
-    char name[20];
-    char enterprise[20];
-} BusLine;
-
-typedef struct data_type {
-    int id;
-    char nome[20];
-} BusStop;
-
-typedef BusStop data_type;
+#include <object.h>
 
 // Funções do fileMenager
 int loadFromFile(Object *object);
 int saveToFile(Object *object);
 
-int openFileHandle(FILE **file);
-int handleManeger(Object *object, FILE *file);
-int openLine(char *str, BusLine *line);
-int saveStops(DoubleList *dl, char *path);
-int removeLine(char *path);
+int open_line_file(FILE **file);
+int get_lines_from_file(Object *object, FILE *file);
+int openLine(wchar_t *str, BusLine *line);
+int saveStops(DoubleLinkedList *dl, char *path);
+int removeLine(wchar_t *path);
 int saveLine(Object *obj);
 
 #endif
