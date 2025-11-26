@@ -5,7 +5,7 @@
 
 #define DBL 256
 
-HandleResult init_newstop_handle(Style const *style, wchar_t *line)
+HandleResult init_newstop_handle(Style const *style, wchar_t *line, wchar_t *current)
 {
     void *persistence = NULL;
 
@@ -33,7 +33,7 @@ HandleResult init_newstop_handle(Style const *style, wchar_t *line)
 
     while(running)
     {
-        PageResult result = init_newstop_page(args, error);
+        PageResult result = init_newstop_page(args, error, current);
         throw_popup = 0;
 
         //Manipulação do resultado da página
@@ -48,7 +48,7 @@ HandleResult init_newstop_handle(Style const *style, wchar_t *line)
         //Caso seja um texto
         case page_action_text:
             //Tenta criar, se falhar colocar o texto de error em error e ativa um popup
-            if (is_emptyw(result.first_text) || is_emptyw(result.second_text) || is_emptyw(result.third_text) || 1/*func aqui*/)
+            if (is_emptyw(result.first_text) || is_emptyw(result.second_text) || is_emptyw(result.third_text) || 1/*func aqui*/) //Passa o current aqui também
             {
                 args.throw_popup = 1;
                 wcscpy(error, L"Falha ao criar");

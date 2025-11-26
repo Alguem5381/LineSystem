@@ -27,7 +27,9 @@ HandleResult init_stop_handle(Style const *style, wchar_t *line)
     HandleResult handle_result =
     {
         .state = state_exit,
-        .first_value = line
+        .first_value = line,
+        .second_value = NULL,
+        .third_value = NULL
     };
 
     while (running)
@@ -49,10 +51,18 @@ HandleResult init_stop_handle(Style const *style, wchar_t *line)
             // Faz algo
             break;
 
-        // Caso seja um texto e um índice
         case page_action_text_and_selected:
             if (!wcscmp(result.first_text, L"create"))
             {
+                handle_result.third_value = (wchar_t*) malloc(sizeof(wchar_t) * DBL);
+                if (!handle_result.third_value)
+                {
+                    handle_result.state = state_exit;
+                    running = 0;
+                    break;
+                }
+
+                wcscpy(handle_result.third_value, elements[result.selected_index]);
                 handle_result.state = state_new_stop;
                 running = 0;
                 break;
@@ -67,7 +77,6 @@ HandleResult init_stop_handle(Style const *style, wchar_t *line)
             break;
 
         case page_action_select:
-            free(handle_result.second_value);
             handle_result.second_value = (wchar_t *)malloc(sizeof(wchar_t) * DBL);
 
             if (!handle_result.second_value)

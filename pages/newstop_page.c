@@ -20,7 +20,7 @@ typedef struct Persistence
 
 // Inicializador da página
 
-PageResult init_newstop_page(PageArgs args, wchar_t const *error)
+PageResult init_newstop_page(PageArgs args, wchar_t const *error, wchar_t *current)
 {
     PageResult result = {0};
 
@@ -66,6 +66,9 @@ PageResult init_newstop_page(PageArgs args, wchar_t const *error)
     wchar_t first_text[DBL] = L"\0";
     wchar_t second_text[DBL] = L"\0";
     wchar_t third_text[DBL] = L"\0";
+
+    wchar_t title_text[DBL];
+    swprintf(title_text, DBL, L"Criando parada após a parada %ls", current);
 
     wchar_t *keys[] = {L"Esc", L"↑", L"←", L"→", L"↵"};
     wchar_t *options[] = {L"Sair", L"Sobe", L"Esquerda" , L"Direita", L"Confirmar"};
@@ -226,7 +229,7 @@ PageResult init_newstop_page(PageArgs args, wchar_t const *error)
         {
             int sucessful = 1;
 
-            sucessful *= draw_base_page(L"Criando parada", &general_context);
+            sucessful *= draw_base_page(title_text, &general_context);
             sucessful *= draw_footer(keys, options, keys_length, &general_context);
 
             if (is_emptyw(first_text))

@@ -121,7 +121,7 @@ int main()
             break;
 
         case state_new_stop:
-            handle_result = init_newstop_handle(&style, handle_result.first_value);
+            handle_result = init_newstop_handle(&style, handle_result.first_value, handle_result.third_value);
             break;
 
         case state_edit_stop:
@@ -141,6 +141,7 @@ int main()
 
     free(handle_result.first_value);
     free(handle_result.second_value);
+    free(handle_result.third_value);
 
     end_ncurses();
 

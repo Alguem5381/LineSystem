@@ -161,7 +161,7 @@ PageResult init_stop_page(PageArgs args, wchar_t *elements[], int elements_lengt
 
             wcscpy(result.first_text, L"create");
             result.action = page_action_text_and_selected;
-            result.selected_index = 0;
+            result.selected_index = list_context.element_in_focus;
             running = 0;
             break;
 

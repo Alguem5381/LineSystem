@@ -4,6 +4,6 @@
 #include <page_results.h>
 #include <style.h>
 
-PageResult init_newstop_page(PageArgs args, wchar_t const *error);
+PageResult init_newstop_page(PageArgs args, wchar_t const *error, wchar_t *current);
 
 #endif //NEWSTOP_PAGE_H
