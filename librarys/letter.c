@@ -66,3 +66,13 @@ int is_emptyw(wchar_t string[])
 {
     return !string[0];
 }
+
+int contains_wstr(wchar_t *needle, wchar_t *haystack)
+{
+    if (!haystack || !needle)
+        return 0;
+
+    if (wcsstr(haystack, needle) != NULL)
+        return 1;
+    return 0;
+}

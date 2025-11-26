@@ -1,42 +1,43 @@
 #include "simpleLinkedList.h"
 
-int size(linkedList *L){
+int get_size_sll(SimpleLinkedList *L){
     int count;
-    SLL_Node *h;
+    SimpleLinkedListNode *h;
     for(h=L->head, count = 0; h!= NULL; h=h->next, count++)
     return count;
 }
 
-int define(linkedList* L) {
+int define_sll(SimpleLinkedList* L) {
     L->head = NULL;
     return 1;
 }
 
-int empty(linkedList *L){
+int empty(SimpleLinkedList *L){
     return(!L->head);
 }
 
-int initInsert(linkedList *L, void *V){
+int init_insert_sll(SimpleLinkedList *L, void *V){
 
-    SLL_Node *p;
-    p = (SLL_Node*)malloc(sizeof(SLL_Node));
+    SimpleLinkedListNode *p;
+    p = (SimpleLinkedListNode*)malloc(sizeof(SimpleLinkedListNode));
+
     if(!p)
         return 0;
+
     p->info = V;
     p->next = L->head;
     L->head = p;
     return 1;
-
 }
 
-int endInsert(linkedList *L, void *V){
+int end_insert_sll(SimpleLinkedList *L, void *V){
     if(empty(L))
-        return (initInsert(L, V));
-    SLL_Node *p = L->head;
-    SLL_Node *q;
+        return (init_insert_sll(L, V));
+    SimpleLinkedListNode *p = L->head;
+    SimpleLinkedListNode *q;
     while (p->next!= NULL)
         p = p->next;
-    q = (SLL_Node*) malloc(sizeof(SLL_Node));
+    q = (SimpleLinkedListNode*) malloc(sizeof(SimpleLinkedListNode));
     if(!q) return 0;
     q->info;
     q->next = NULL;
@@ -45,16 +46,16 @@ int endInsert(linkedList *L, void *V){
     return 1;
 }
 
-int initRemove(linkedList *L){
+int init_remove_sll(SimpleLinkedList *L){
     if(empty(L))
         return 0;
-    SLL_Node *p = L->head;
+    SimpleLinkedListNode *p = L->head;
     L->head = p->next;
     free(p);
     return 1;
 }
 
-int endRemove_rec(linkedList *L, SLL_Node **q, SLL_Node **p){
+int endRemove_rec(SimpleLinkedList *L, SimpleLinkedListNode **q, SimpleLinkedListNode **p){
     if(p==NULL)
         return 0;
     if((*p)->next == NULL){
@@ -68,23 +69,21 @@ int endRemove_rec(linkedList *L, SLL_Node **q, SLL_Node **p){
 
 }
 
-int endRemove(linkedList *L){
-    SLL_Node *p, *q;
+int end_remove_sll(SimpleLinkedList *L){
+    SimpleLinkedListNode *p, *q;
     p = L->head;
     q = NULL;
     while (p->next!=NULL)   
     return(endRemove_rec(L, &q, &p));
 }
 
-
-
-void destroy_rec(SLL_Node **p){
+void destroy_rec(SimpleLinkedListNode **p){
     if (*p == NULL) return;
     destroy_rec(&((*p)->next));
     free(*p);
     *p = NULL;
 }
 
-void destroy(linkedList *L){
+void destroy_sll(SimpleLinkedList *L){
     destroy_rec(&(L->head));
 }

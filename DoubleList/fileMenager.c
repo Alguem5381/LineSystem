@@ -1,176 +1,223 @@
 #include "fileMenager.h"
-#include "doubleList.h"
-#include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <wchar.h>   // Necessário para wide chars
+#include <stdlib.h>  // Necessário para malloc, free, wcstombs
+#include <locale.h>  // Recomendado ter setlocale no main
 
+// Define auxiliar para converter paths Wide para Char (necessário para fopen/mkdir)
+// Retorna 1 se sucesso, 0 se falha
+int wide_path_to_multibyte(const wchar_t *wide_path, char *mb_path, size_t max_size) {
+    size_t res = wcstombs(mb_path, wide_path, max_size);
+    return (res != (size_t)-1);
+}
 
-int init(Object *object)
+int loadFromFile(Object *object)
 {
-    FILE *file;
-    if(!openFileHandle(&file))
-        return 0;
+    if (!object) return 0;
 
-    if(object->SLL != NULL){
+    FILE *file;
+    if (!open_line_file(&file))
+        return 0;
+    
+    // Agora usando a versão otimizada
+    if (!get_lines_from_file(object, file)) {
+        fclose(file);
         return 0;
     }
 
-    linkedList *LL = (linkedList*)malloc(sizeof(linkedList));
-    if (!LL)
-        return 0;
-    
-    object->SLL = LL;
-    LL->head = NULL;
-    handleManeger(object, file);
     fclose(file);
     return 1;
 }
 
-int openFileHandle(FILE **file){
-    printf("4\n");
-    *file = fopen(HANDLE_NAME, "r");
-
-    if(!*file)
-    {
-        printf("5\n");
+int open_line_file(FILE **file) {
+    // HANDLE_NAME geralmente é um define string literal. 
+    // O sistema de arquivos espera char*, então mantemos assim.
+    *file = fopen(HANDLE_NAME, "r"); // Tenta abrir leitura
+    
+    if (!*file) {
+        // Se falhar, cria novo. Nota: "w+" trunca o arquivo.
         *file = fopen(HANDLE_NAME, "w+");
-
-        if (!*file){
-            printf("6\n");
-            return 0;}
-        else
-            return 1;
+        if (!*file) return 0;
     }
     return 1;
 }
 
-int handleManeger(Object *object, FILE *file){
-    char buffer[255];
-    BusLine *temp;
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        buffer[strcspn(buffer, "\r\n")] = '\0';
-        temp = (BusLine*)malloc(sizeof(BusLine));
+int get_lines_from_file(Object *object, FILE *file) {
+    wchar_t buffer[1024]; // Buffer WIDE
+    wchar_t *context = NULL; // Necessário para wcstok (thread-safe)
 
-        char *name = strtok(buffer, ",");
-        char *enterprise = strtok(NULL, ",");
+    // fgetws substitui fgets
+    while (fgetws(buffer, 1024, file)) {
+        // Remove quebra de linha (\r ou \n)
+        buffer[wcscspn(buffer, L"\r\n")] = L'\0';
 
-        strncpy(temp->name, name, sizeof(temp->name)-1);
-        temp->name[sizeof(temp->name)-1] = '\0';
+        // 1. Tokenização (Primeira passagem para validar)
+        // Nota: wcstok precisa do endereço de 'context'
+        wchar_t *name = wcstok(buffer, L",", &context);
+        wchar_t *enterprise = wcstok(NULL, L",", &context);
 
-        strncpy(temp->enterprise, enterprise, sizeof(temp->enterprise)-1);
-        temp->enterprise[sizeof(temp->enterprise)-1] = '\0';
-        
-        openLine(name, temp);
-        initInsert(object->SLL, temp);
+        // Se a linha estiver quebrada, pula sem alocar memória (OTIMIZAÇÃO)
+        if (!name || !enterprise) {
+            continue; 
+        }
+
+        // 2. Alocação (Só agora que sabemos que os dados existem)
+        BusLine *temp = malloc(sizeof(BusLine));
+        if (!temp) return 0;
+
+        // 3. Cópia segura usando swprintf (substitui strncpy e garante \0)
+        swprintf(temp->name, sizeof(temp->name)/sizeof(wchar_t), L"%ls", name);
+        swprintf(temp->enterprise, sizeof(temp->enterprise)/sizeof(wchar_t), L"%ls", enterprise);
+
+        // Funções da lista devem esperar wchar_t agora
+        if (!openLine(name, temp) || !init_insert_sll(object->SLL, temp)) {
+            free(temp);
+            return 0;
+        }
     }
+
     return 1;
 }
 
-int openLine(char *str, BusLine *list){
-    char line[50] = "lines/";
-    strcat(line, str);
-    strcat(line, ".dat");
+// str agora deve ser wchar_t*
+int openLine(wchar_t *str, BusLine *list){
+    wchar_t wide_path[100];
+    char mb_path[100]; // Path "multibyte" para o sistema operacional
 
-    FILE *file = fopen(line, "rb");
+    // Formata string larga interna: lines/Nome.dat
+    if(swprintf(wide_path, 100, L"lines/%ls.dat", str) < 0)
+        return 0;
+
+    // CONVERSÃO: O sistema de arquivos (fopen/mkdir) não entende wchar_t nativamente no Linux
+    if (!wide_path_to_multibyte(wide_path, mb_path, sizeof(mb_path))) return 0;
+
+    // mkdir usa string comum
+    int result = mkdir("lines", 0777); 
+    if (result && errno != EEXIST)
+        return 0;
+
+    FILE *file = fopen(mb_path, "rb");
     
     if(!file){
-        printf("%s nao exite.", line);
-        file = fopen(line, "w");
+        file = fopen(mb_path, "wb+");
         if (!file)
             return 0;
     }
-    list->list = malloc(sizeof(DoubleList));
+
+    list->list = malloc(sizeof(DoubleLinkedList));
+    if (!list->list)
+    {
+        fclose(file);
+        return 0;
+    }
+
     create(list->list);
 
     BusStop temp;
-    while (fread(&temp, sizeof(BusStop), 1, file) == 1)
-    {
-         BusStop *novo = malloc(sizeof(BusStop));
-        *novo = temp;
+    // fread lê binário, funciona igual desde que a struct BusStop tenha sido atualizada
+    // Se BusStop agora tem wchar_t, o tamanho lido será maior, o que é correto.
+    while (fread(&temp, sizeof(BusStop), 1, file) == 1){
 
-        add(list->list, novo);
-    }
-
-    fclose(file);
-    return 1;
-}
-
-int saveObject(Object *obj){
-    printf("1\n");
-    if(!obj)
-        return 0;
-    if(!saveLine(obj->SLL)){
-        printf("Erro ao salvar.");
-        return 0;
-    }
-    return 1;
-}
-
-int saveLine(linkedList *ll){
-    printf("2\n");
-    FILE *file = fopen(HANDLE_NAME, "w+");
-
-    if(!file){
-        perror("Erro fopen w+");
-        printf("HANDLE_NAME = '%s'\n", HANDLE_NAME);
-        printf("3\n");
-        if(!openFileHandle(&file))
-        {
-            printf("Opa, to aqui.");
+        BusStop *novo = malloc(sizeof(BusStop));
+        if (!novo){
+            fclose(file);
             return 0;
         }
-        else
-            file = fopen(HANDLE_NAME, "w+");
+
+        *novo = temp;
+
+        if(!add(list->list, novo)){
+            free(novo);
+            fclose(file);
+            return 0;
+        }
     }
-    SLL_Node *curr = ll->head;
-    while(curr)
-    {
-        char line[50] = "lines/";
-        BusLine *DL = ((BusLine*)curr->info);
-        fprintf(file,"%s,%s\n", DL->name, DL->enterprise);
-        strcat(line, DL->name);
-        strcat(line, ".dat");
-        saveStops(DL->list, line);
-        curr = curr->next;
-    }
+
     fclose(file);
     return 1;
 }
 
-int saveStops(DoubleList *dl, char *path){
-    
-    if(!dl)
+int saveToFile(Object *obj){
+    if(!obj || !saveLine(obj))
         return 0;
+    return 1;
+}
 
-    FILE *file = fopen(path, "wb");
+int saveLine(Object *obj){
+    FILE *file = fopen(HANDLE_NAME, "w+");
 
     if(!file)
+        return 0;
+
+    SimpleLinkedListNode *current = obj->SLL->head;
+    while(current)
     {
-        printf("%s nao exite.", path);
-            return 0;
+        wchar_t wide_path[100];
+        char mb_path[100];
+
+        BusLine *double_linked_list = ((BusLine*)current->info);
+        if(!double_linked_list) continue;
+        
+        // Formata o path em wide
+        if(swprintf(wide_path, 100, L"lines/%ls.dat", double_linked_list->name) < 0)
+            continue;
+        
+        // Converte path para char para abrir arquivo binário
+        if (!wide_path_to_multibyte(wide_path, mb_path, sizeof(mb_path))) continue;
+
+        // Escreve no arquivo principal usando fwprintf (Suporte a Wide Char no texto)
+        // %ls imprime string wide
+        fwprintf(file, L"%ls,%ls\n", double_linked_list->name, double_linked_list->enterprise);
+        
+        // Passa o path já convertido (char*) pois saveStops usa fopen
+        saveStops(double_linked_list->list, mb_path);
+        
+        current = current->next;
     }
+    fclose(file);
+    return 1;
+}
 
-    Node *curr = dl->head;
-    int i= 0;
+// Note: path aqui chega como char* pois já convertemos antes
+int saveStops(DoubleLinkedList *dl, char *path){
+    if(!dl|| !path)
+        return 0;
+    
+    FILE *file = fopen(path, "wb+");
 
-    while (i < dl->size)
+    if(!file)
+        return 0;
+
+    DoubleLinkedListNode *curr = dl->head;
+    
+    for (int i = 0; i < dl->size; i++)
     {
+        // Gravação binária pura. Se DataType tiver wchar_t, gravará 4 bytes por char.
+        // ATENÇÃO: Isso torna os arquivos .dat incompatíveis com a versão anterior do seu programa.
         fwrite(curr->info, sizeof(DataType), 1, file);
         curr = curr->next;
-        i++;
     }
 
     fclose(file);
     return 1;
 }
 
-int removeLine(char *path){
-    char line[50] = "lines/";
-    strcat(line, path);
-    if (remove(line) == 0) {
-        printf("Arquivo binário deletado!\n");
-        return 1;
-    } else {
-        perror("Erro ao deletar arquivo binário");
-        return 0;
-    }
+// path aqui é o NOME da linha (wide), ex: L"Linha 1"
+int removeLine(wchar_t *path){
+    if (!path) return 0;
 
+    wchar_t wide_full_path[100];
+    char mb_full_path[100];
+
+    // Cria lines/Nome.dat em wide
+    if (swprintf(wide_full_path, 100, L"lines/%ls.dat", path) < 0)
+        return 0;
+
+    // Converte para char para usar remove()
+    if (!wide_path_to_multibyte(wide_full_path, mb_full_path, sizeof(mb_full_path)))
+        return 0;
+
+    return remove(mb_full_path) == 0;
 }
