@@ -22,8 +22,8 @@ HandleResult init_editstop_handle(Style const *style, wchar_t *line, wchar_t *st
         .throw_popup = 0
     };
 
-    wchar_t first_time[TIME_DBL];
-    wchar_t second_time[TIME_DBL];
+    wchar_t first_time[TIME_DBL] = {0};
+    wchar_t second_time[TIME_DBL] = {0};
 
     //get_stop(object, stop, );
 

@@ -26,10 +26,10 @@ HandleResult init_search_handle(Style const *style)
     int throw_popup = 0;
 
     //Vetores que serão usados
-    wchar_t first_stop[DBL];
-    wchar_t second_stop[DBL];
-    wchar_t first_time[TIME_DBL];
-    wchar_t second_time[TIME_DBL];
+    wchar_t first_stop[DBL] = {0};
+    wchar_t second_stop[DBL] = {0};
+    wchar_t first_time[TIME_DBL] = {0};
+    wchar_t second_time[TIME_DBL] = {0};
 
     wchar_t *infomations = NULL;
 
