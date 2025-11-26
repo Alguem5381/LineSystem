@@ -1,14 +1,10 @@
 #include <search_handle.h>
 #include <search_page.h>
 #include <stdlib.h>
+#include <hours.h>
 
 #define DBL 256
 #define TIME_DBL 7
-
-int is_valid_time(wchar_t time[])
-{
-    return 0;
-}
 
 int free_elements(wchar_t *elements[], int elements_length)
 {
@@ -114,7 +110,7 @@ HandleResult init_search_handle(Style const *style)
             {
             case 0:
                 //Válida o horário
-                if (!is_valid_time(result.first_text))
+                if (!is_valid_format(result.first_text))
                 {
                     throw_popup = 1;
                     break;
@@ -145,7 +141,7 @@ HandleResult init_search_handle(Style const *style)
                 //ele faz a mesma coisas com a diferença da mudança do estado
             case 2:
                 //Válida o horário
-                if (!is_valid_time(result.first_text))
+                if (!is_valid_format(result.first_text))
                 {
                     throw_popup = 1;
                     break;
