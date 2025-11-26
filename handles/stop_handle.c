@@ -1,10 +1,10 @@
-#include <line_handle.h>
-#include <line_page.h>
+#include <stop_handle.h>
+#include <stop_page.h>
 #include <stdlib.h>
 
 #define DBL 256
 
-HandleResult init_line_handle(Style const *style)
+HandleResult init_stop_handle(Style const *style, wchar_t *line)
 {
     void *persistence = NULL;
 
@@ -27,12 +27,12 @@ HandleResult init_line_handle(Style const *style)
     HandleResult handle_result =
     {
         .state = state_exit,
-        .first_value = NULL
+        .first_value = line
     };
 
     while (running)
     {
-        PageResult result = init_line_page(args, elements, elements_length);
+        PageResult result = init_stop_page(args, elements, elements_length, line);
         throw_popup = 0;
 
         // Manipulação do resultado da página
@@ -41,30 +41,19 @@ HandleResult init_line_handle(Style const *style)
         // Caso seja uma ação de voltar
         case page_action_back:
             running = 0;
-            handle_result.state = state_main;
+            handle_result.state = state_line;
             break;
 
         // Caso seja um texto
         case page_action_text:
-            //Criar o vetor novo
-            //
+            // Faz algo
             break;
 
         // Caso seja um texto e um índice
         case page_action_text_and_selected:
             if (!wcscmp(result.first_text, L"create"))
             {
-                handle_result.first_value = (wchar_t *)malloc(sizeof(wchar_t) * DBL);
-
-                if (!handle_result.first_value)
-                {
-                    handle_result.state = state_exit;
-                    running = 0;
-                    break;
-                }
-
-                wcscpy(handle_result.first_value, elements[result.selected_index]);
-                handle_result.state = state_new_line;
+                handle_result.state = state_new_stop;
                 running = 0;
                 break;
             }
@@ -78,19 +67,18 @@ HandleResult init_line_handle(Style const *style)
             break;
 
         case page_action_select:
-            if (handle_result.first_value == 0)
-                free(handle_result.first_value);
-            handle_result.first_value = (wchar_t *)malloc(sizeof(wchar_t) * DBL);
+            free(handle_result.second_value);
+            handle_result.second_value = (wchar_t *)malloc(sizeof(wchar_t) * DBL);
 
-            if (!handle_result.first_value)
+            if (!handle_result.second_value)
             {
                 handle_result.state = state_exit;
                 running = 0;
                 break;
             }
 
-            wcscpy(handle_result.first_value, elements[result.selected_index]);
-            handle_result.state = state_stops;
+            wcscpy(handle_result.second_value, elements[result.selected_index]);
+            handle_result.state = state_edit_stop;
             running = 0;
 
             break;

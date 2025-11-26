@@ -26,7 +26,11 @@ HandleResult init_login_handle(Style const *style)
 
     //Loop principal
     int running = 1;
-    HandleResult handle_result;
+    HandleResult handle_result =
+    {
+        .state = state_exit,
+        .first_value = NULL
+    };
 
     while(running)
     {
@@ -44,7 +48,7 @@ HandleResult init_login_handle(Style const *style)
 
         //Caso seja um texto
         case page_action_text:
-            if (!is_valid_password(result.text))
+            if (!is_valid_password(result.first_text))
                 args.throw_popup = 1;
             else
             {

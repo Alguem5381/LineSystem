@@ -1,6 +1,6 @@
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <ncursesw/ncurses.h>
-#include <login_page.h>
+#include <newline_page.h>
 #include <draw.h>
 #include <stdlib.h>
 #include <letter.h>
@@ -12,46 +12,54 @@
 // Struct para memória persistente
 typedef struct Persistence
 {
-    wchar_t login_bar_text[DBL];
+    wchar_t first_text[DBL];
+    wchar_t second_text[DBL];
+    int selected;
 } Persistence;
 
 // Inicializador da página
 
-PageResult init_login_page(PageArgs args)
+PageResult init_newline_page(PageArgs args, wchar_t const *error)
 {
     PageResult result = {0};
 
     //Contextos
     DrawContext general_context =
     {
-        .startx = 0,
-        .starty = 0,
         .width = 100,
         .height = 100
     };
-    DrawContext login_bar_context = 
+    DrawContext first_text_context =
     {
-        .width = 50,
+        .width = 70,
         .height = 100,
         .element_in_focus = 1
     };
+    DrawContext second_text_context =
+    {
+        .width = 70,
+        .height = 100
+    };
     DrawContext dialog_context =
     {
-        .width = 50,
+        .width = 70,
         .height = 100
     };
 
     //Definição de estilo para os contextos
     set_style(args.style, &general_context);
-    set_style(args.style, &login_bar_context);
+    set_style(args.style, &first_text_context);
+    set_style(args.style, &second_text_context);
     set_style(args.style, &dialog_context);
-    
-    //Vetores utilizados
-    wchar_t default_login_bar_text[] = L"Digite a senha para entrar";
-    wchar_t login_bar_text[DBL] = L"\0";
 
-    wchar_t *keys[] = {L"Esc", L"↵"};
-    wchar_t *options[] = {L"Sair", L"Confirmar"};
+    //Vetores utilizados
+    wchar_t default_first_text[DBL] = L"Digite o número da linha";
+    wchar_t default_second_text[DBL] = L"Digite o nome da companhia";
+    wchar_t first_text[DBL] = L"\0";
+    wchar_t second_text[DBL] = L"\0";
+
+    wchar_t *keys[] = {L"Esc", L"↑", L"↓", L"↵"};
+    wchar_t *options[] = {L"Sair", L"Sobe", L"Desce", L"Confirmar"};
 
     //Tamanho dos vetores
     int keys_length = sizeof(keys) / sizeof(keys[0]);
@@ -63,8 +71,15 @@ PageResult init_login_page(PageArgs args)
     {
         memory = (Persistence*)*args.persistence;
 
-        if(!is_emptyw(memory->login_bar_text))
-            wcscpy(login_bar_text, memory->login_bar_text);
+        if (!is_emptyw(memory->first_text))
+            wcscpy(first_text, memory->first_text);
+        if (!is_emptyw(memory->second_text))
+            wcscpy(second_text, memory->second_text);
+        if (memory->selected)
+        {
+            first_text_context.element_in_focus = 0;
+            second_text_context.element_in_focus = 1;
+        }
     }
 
     // Para capitura teclas
@@ -89,6 +104,8 @@ PageResult init_login_page(PageArgs args)
             break;
 
         case esc:
+            if (is_popup_on) break;
+
             result.action = page_action_back;
             running = 0;
             break;
@@ -100,25 +117,49 @@ PageResult init_login_page(PageArgs args)
                 need_draw = 1;
                 break;
             }
-
-            wcscpy(result.first_text, login_bar_text);
-
+            wcscpy(result.first_text, first_text);
+            wcscpy(result.second_text, second_text);
             result.action = page_action_text;
             running = 0;
             break;
 
-        case common:
-        case number:
+        case down:
             if (is_popup_on) break;
 
-            add_lastw(login_bar_text, DBL, character);
+            first_text_context.element_in_focus = 0;
+            second_text_context.element_in_focus = 1;
+            need_draw = 1;
+            break;
+
+        case up:
+            if (is_popup_on) break;
+
+            first_text_context.element_in_focus = 1;
+            second_text_context.element_in_focus = 0;
+            need_draw = 1;
+            break;
+
+        case common:
+            if (second_text_context.element_in_focus)
+            {
+                add_lastw(second_text, DBL, character);
+                need_draw = 1;
+            }
+            break;
+
+        case number:
+            if (first_text_context.element_in_focus)
+                add_lastw(first_text, DBL, character);
+            else if (second_text_context.element_in_focus)
+                add_lastw(second_text, DBL, character);
             need_draw = 1;
             break;
 
         case backspace:
-            if (is_popup_on) break;
-
-            remove_lastw(login_bar_text);
+            if (first_text_context.element_in_focus)
+                remove_lastw(first_text);
+            else if (second_text_context.element_in_focus)
+                remove_lastw(second_text);
             need_draw = 1;
             break;
 
@@ -135,10 +176,12 @@ PageResult init_login_page(PageArgs args)
             general_context.endy = LINES;
 
             DrawContext main_panel_context = general_context;
+
             main_panel_context.starty += 5;
             main_panel_context.endy -= 5;
 
-            split_context(&login_bar_context, &main_panel_context, 100, FIRST, HORIZONTAL);
+            split_context(&first_text_context, &main_panel_context, 50, FIRST, VERTICAL);
+            split_context(&second_text_context, &main_panel_context, 50, SECOND, VERTICAL);
             split_context(&dialog_context, &main_panel_context, 100, FIRST, HORIZONTAL);
 
             need_split = 0;
@@ -149,16 +192,21 @@ PageResult init_login_page(PageArgs args)
         {
             int sucessful = 1;
 
-            sucessful *= draw_base_page(L"Manutenção", &general_context);
+            sucessful *= draw_base_page(L"Criando linha", &general_context);
             sucessful *= draw_footer(keys, options, keys_length, &general_context);
 
-            if (is_emptyw(login_bar_text))
-                sucessful *= draw_text_box(default_login_bar_text, &login_bar_context);
+            if (is_emptyw(first_text))
+                sucessful *= draw_text_box(default_first_text, &first_text_context);
             else
-                sucessful *= draw_text_box(login_bar_text, &login_bar_context);
+                sucessful *= draw_text_box(first_text, &first_text_context);
+
+            if (is_emptyw(second_text))
+                sucessful *= draw_text_box(default_second_text, &second_text_context);
+            else
+                sucessful *= draw_text_box(second_text, &second_text_context);
 
             if (is_popup_on)
-                sucessful *= draw_message_dialog(L"Senha incorreta", &dialog_context);
+                sucessful *= draw_message_dialog(error, &dialog_context);
 
             need_draw = 0;
             refresh();
@@ -184,7 +232,14 @@ PageResult init_login_page(PageArgs args)
         }
     }
 
-    wcscpy(memory->login_bar_text, login_bar_text);
+    // Salva o que é necessário na memória
+    if (first_text_context.element_in_focus)
+        memory->selected = 0;
+    else
+        memory->selected = 1;
+
+    wcscpy(memory->first_text, first_text);
+    wcscpy(memory->second_text, second_text);
 
     // Modifica o ponteiro no handle
     *args.persistence = memory;

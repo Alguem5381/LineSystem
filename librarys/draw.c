@@ -93,7 +93,7 @@ int draw_text_box(wchar_t const *text, DrawContext const *context)
     mvaddnwstr(coordinates.vertical_middle, coordinates.initial_x + 1, text, coordinates.width - 2);
     attroff(COLOR_PAIR(context->default_pair_color));
 
-    //Nesse caso, o elemento em foco é usado diferente. Caso seja diferente de 0, a caixa fica com a borda em foco
+    // Nesse caso, o elemento em foco é usado diferente. Caso seja diferente de 0, a caixa fica com a borda em foco
     if (context->element_in_focus)
     {
         attron(COLOR_PAIR(context->on_focus_border_color));
@@ -290,7 +290,7 @@ int draw_list(wchar_t **elements, int array_length, DrawContext const *context)
     Coordinates coordinates;
 
     // Se a definição de coordenadas falhar ou se os valores de parametros não forem validos então retorna erro
-    if (!define_coordinates(&coordinates, context, 9, 9) || array_length < 0 || !elements || !context)
+    if (!define_coordinates(&coordinates, context, 9, 9) || !context)
         return 0;
 
     attron(COLOR_PAIR(context->default_pair_color)); // Ativa a cor padrão
@@ -357,7 +357,7 @@ int draw_label(wchar_t const *text, DrawContext const *context)
     Coordinates coordinates;
 
     // Se a definição de coordenadas falhar ou se os valores de parametros não forem validos então retorna erro
-    if (!define_coordinates(&coordinates, context, 6, 6) || !text || !context)
+    if (!define_coordinates(&coordinates, context, 6, 6) || !context)
         return 0;
 
     // Variaveis de posição x e y para manipular a posição do texto
@@ -365,46 +365,51 @@ int draw_label(wchar_t const *text, DrawContext const *context)
     int pos_x = coordinates.initial_x + 3;
 
     // Tamanho do texto
-    int text_length = wcslen(text);
+    int text_length = 0;
+    if (text)
+        text_length = wcslen(text);
 
     // Ponteiro para navegar pelo texto
-    wchar_t *dummy = (wchar_t*)text;
+    wchar_t *dummy = (wchar_t *)text;
 
     attron(COLOR_PAIR(context->default_pair_color)); // Ativa a cor padrão
     // Desenha a caixa
     draw_box(coordinates.initial_x, coordinates.initial_y, coordinates.final_x, coordinates.final_y);
     attroff(COLOR_PAIR(context->default_pair_color)); // Desativa a cor padrão
 
-    attron(COLOR_PAIR(context->default_pair_color));
-    // Ele continuara no loop enquanto o ponteiro temporário não passar do endereço da adição entre o endereço inícial do texto e o tamanho dele
-    // e em quanto a posição y não chegar a 2 pixel da borda inferior da caixa
-    while (dummy < text + text_length && pos_y < coordinates.final_y - 2)
+    if (text)
     {
-        // Tamanho da primeira palavra no endereço temporário
-        int temp = wcscspn(dummy, L" \0");
-
-        // Se na posição atual mais o tamanho da palavra estiver estiver a dois pixels da borda
-        if (pos_x + temp > coordinates.final_x - 2)
+        attron(COLOR_PAIR(context->default_pair_color));
+        // Ele continuara no loop enquanto o ponteiro temporário não passar do endereço da adição entre o endereço inícial do texto e o tamanho dele
+        // e em quanto a posição y não chegar a 2 pixel da borda inferior da caixa
+        while (dummy < text + text_length && pos_y < coordinates.final_y - 2)
         {
-            pos_y++;                           // Ele desce a posição no y
-            pos_x = coordinates.initial_x + 3; // e reseta a posição no x
+            // Tamanho da primeira palavra no endereço temporário
+            int temp = wcscspn(dummy, L" \0");
+
+            // Se na posição atual mais o tamanho da palavra estiver estiver a dois pixels da borda
+            if (pos_x + temp > coordinates.final_x - 2)
+            {
+                pos_y++;                           // Ele desce a posição no y
+                pos_x = coordinates.initial_x + 3; // e reseta a posição no x
+            }
+
+            // Para evitar desenha uma palavra maior que a largura da caixa
+            if (temp < coordinates.width - 4)
+                // Na posições indicadas desenha a palavra
+                mvaddnwstr(pos_y, pos_x, dummy, temp);
+
+            pos_x += temp; //"Anda" no x para a esquerda
+            dummy += temp; // e "Anda" o ponteiro temporario dentro da string principal
+
+            if (*dummy == L' ') // Se nessa posição dentro do texto houver um espaço então ele pula
+            {
+                dummy++; // Anda o ponteiro
+                pos_x++; // e o x
+            }
         }
-
-        // Para evitar desenha uma palavra maior que a largura da caixa
-        if (temp < coordinates.width - 4)
-            // Na posições indicadas desenha a palavra
-            mvaddnwstr(pos_y, pos_x, dummy, temp);
-
-        pos_x += temp; //"Anda" no x para a esquerda
-        dummy += temp; // e "Anda" o ponteiro temporario dentro da string principal
-
-        if (*dummy == L' ') // Se nessa posição dentro do texto houver um espaço então ele pula
-        {
-            dummy++; // Anda o ponteiro
-            pos_x++; // e o x
-        }
+        attroff(COLOR_PAIR(context->default_pair_color)); // Desativa a cor padrão
     }
-    attroff(COLOR_PAIR(context->default_pair_color)); // Desativa a cor padrão
 
     attron(COLOR_PAIR(context->default_border_color)); // Ativa a cor de borda
     // Desenha a borda da caixa

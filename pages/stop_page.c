@@ -1,6 +1,6 @@
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <ncursesw/ncurses.h>
-#include <line_page.h>
+#include <stop_page.h>
 #include <draw.h>
 #include <stdlib.h>
 #include <letter.h>
@@ -18,7 +18,7 @@ typedef struct Persistence
 
 // Inicializador da página
 
-PageResult init_line_page(PageArgs args, wchar_t *elements[], int elements_length)
+PageResult init_stop_page(PageArgs args, wchar_t *elements[], int elements_length, wchar_t *line)
 {
     PageResult result = {0};
 
@@ -49,7 +49,10 @@ PageResult init_line_page(PageArgs args, wchar_t *elements[], int elements_lengt
     set_style(args.style, &dialog_context);
 
     //Vetores utilizados
-    wchar_t defaul_search_bar_text[DBL] = L"Digite a linha desejada";
+    wchar_t title_text[DBL];
+    swprintf(title_text, DBL, L"Paradas da linha %ls", line);
+
+    wchar_t defaul_search_bar_text[DBL] = L"Digite a parada desejada";
     wchar_t search_bar_text[DBL] = {L"\0"};
 
     wchar_t *keys[] = {L"Esc", L"↑", L"↓", L"↵", L"←", L"→"};
@@ -174,6 +177,7 @@ PageResult init_line_page(PageArgs args, wchar_t *elements[], int elements_lengt
             need_draw = 1;
             break;
 
+        case common:
         case number:
             if (is_popup_on) break;
 
@@ -227,7 +231,7 @@ PageResult init_line_page(PageArgs args, wchar_t *elements[], int elements_lengt
         {
             int sucessful = 1;
 
-            sucessful *= draw_base_page(L"Linhas", &general_context);
+            sucessful *= draw_base_page(title_text, &general_context);
             sucessful *= draw_list(elements, elements_length, &list_context);
             if (is_emptyw(search_bar_text))
                 sucessful *= draw_text_box(defaul_search_bar_text, &seach_bar_context);

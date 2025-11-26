@@ -4,6 +4,8 @@
 #include <style.h>
 #include <wchar.h>
 
+#define DBL 256
+
 typedef enum PageAction
 {
     page_action_fail,
@@ -17,7 +19,9 @@ typedef struct PageResult
 {
     PageAction action;
     int selected_index;
-    wchar_t text[256];
+    wchar_t first_text[DBL];
+    wchar_t second_text[DBL];
+    wchar_t third_text[DBL];
 } PageResult;
 
 typedef struct PageArgs 

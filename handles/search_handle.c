@@ -2,7 +2,7 @@
 #include <search_page.h>
 #include <stdlib.h>
 
-#define DBL 128
+#define DBL 256
 #define TIME_DBL 7
 
 int is_valid_time(wchar_t time[])
@@ -36,11 +36,15 @@ HandleResult init_search_handle(Style const *style)
     wchar_t **elements = NULL;
 
     //Tamanho do vetor
-    int elements_length = sizeof(elements) / sizeof(elements[0]);
+    int elements_length = 0;
 
     //Loop principal
     int running = 1;
-    HandleResult handle_result;
+    HandleResult handle_result = 
+    {
+        .state = state_main,
+        .first_value = NULL
+    };
 
     while(running)
     {
@@ -56,7 +60,7 @@ HandleResult init_search_handle(Style const *style)
             {
             case 0:
                 //Apaga a lista de elementos
-                free_elements(elements, elements_length);
+                // free_elements(elements, elements_length);
 
                 //E finaliza
                 running = 0;
@@ -69,7 +73,7 @@ HandleResult init_search_handle(Style const *style)
                 current_persistence--;
 
                 //Apaga a lista anterior
-                free_elements(elements, elements_length);
+                // free_elements(elements, elements_length);
 
                 //Busca a parada anterior com o nome exato
                 //search_str(&elements, &elements_length, first_stop);
@@ -93,7 +97,7 @@ HandleResult init_search_handle(Style const *style)
             case 0:
             case 1:
                 //Apago a lista antiga
-                free_elements(elements, elements_length);
+                // free_elements(elements, elements_length);
 
                 //Busco uma nova com o novo texto do resultado
                 //search_str(&elements, &elements_length, result.text);
@@ -110,7 +114,7 @@ HandleResult init_search_handle(Style const *style)
             {
             case 0:
                 //Válida o horário
-                if (!is_valid_time(result.text))
+                if (!is_valid_time(result.first_text))
                 {
                     throw_popup = 1;
                     break;
@@ -122,10 +126,10 @@ HandleResult init_search_handle(Style const *style)
 
                 //Salva a primeira parada e horário
                 wcscpy(first_stop, elements[result.selected_index]);
-                wcscpy(first_time, result.text);
+                wcscpy(first_time, result.first_text);
 
                 //Libera a lista antiga
-                free_elements(elements, elements_length);
+                // free_elements(elements, elements_length);
                 elements = NULL;
 
                 //Apaga um possível persistance anteriormente usado
@@ -141,7 +145,7 @@ HandleResult init_search_handle(Style const *style)
                 //ele faz a mesma coisas com a diferença da mudança do estado
             case 2:
                 //Válida o horário
-                if (!is_valid_time(result.text))
+                if (!is_valid_time(result.first_text))
                 {
                     throw_popup = 1;
                     break;
@@ -149,7 +153,7 @@ HandleResult init_search_handle(Style const *style)
 
                 //Salva a segunda parada
                 wcscpy(second_stop, elements[result.selected_index]);
-                wcscpy(second_time, result.text);
+                wcscpy(second_time, result.first_text);
 
                 //Faz a busca
                 //infomation = search_route(fist_stop, second_stop, first_time, second_time);

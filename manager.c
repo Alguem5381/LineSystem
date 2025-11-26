@@ -4,11 +4,17 @@
 #include <style.h>
 #include <locale.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 //Handles
 #include <main_handle.h>
 #include <search_handle.h>
 #include <login_handle.h>
+#include <line_handle.h>
+#include <stop_handle.h>
+#include <newline_handle.h>
+#include <newstop_handle.h>
+#include <editstop_handle.h>
 
 int init_ncurses()
 {
@@ -83,7 +89,7 @@ int main()
 
     HandleResult handle_result = {
         .state = state_main,
-        .value = NULL
+        .first_value = NULL
     };
 
     while(running)
@@ -103,7 +109,23 @@ int main()
             break;
 
         case state_line:
-            
+            handle_result = init_line_handle(&style);
+            break;
+
+        case state_stops:
+            handle_result = init_stop_handle(&style, handle_result.first_value);
+            break;
+
+        case state_new_line:
+            handle_result = init_newline_handle(&style);
+            break;
+
+        case state_new_stop:
+            handle_result = init_newstop_handle(&style, handle_result.first_value);
+            break;
+
+        case state_edit_stop:
+            handle_result = init_editstop_handle(&style, handle_result.first_value, handle_result.second_value);
             break;
 
         case state_exit:
@@ -116,6 +138,9 @@ int main()
     }
 
     //Funções de finalização
+
+    free(handle_result.first_value);
+    free(handle_result.second_value);
 
     end_ncurses();
 

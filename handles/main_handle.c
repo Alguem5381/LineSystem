@@ -17,7 +17,7 @@ HandleResult init_main_handle(Style const *style)
     HandleResult handle_result =
     {
         .state = state_exit,
-        .value = 0
+        .first_value = NULL
     };
 
     while(running)

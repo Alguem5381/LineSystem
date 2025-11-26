@@ -201,7 +201,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             }
 
             result.action = page_action_text_and_selected;
-            wcscpy(result.text, time_text);
+            wcscpy(result.first_text, time_text);
             result.selected_index = list_context.element_in_focus;
             running = 0;
 
@@ -213,7 +213,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             {
                 add_lastw(search_text, DBL, character);
                 result.action = page_action_text;
-                wcscpy(result.text, search_text);
+                wcscpy(result.first_text, search_text);
                 running = 0;
             }
             else
@@ -232,7 +232,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
                 }
 
                 result.action = page_action_text;
-                wcscpy(result.text, search_text);
+                wcscpy(result.first_text, search_text);
                 running = 0;
             }
             else
