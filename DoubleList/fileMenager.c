@@ -1,8 +1,6 @@
 #include "fileMenager.h"
 #include "object.h"
 
-#include <string.h>
-
 
 int loadFromFile(Object *object)
 {
@@ -125,7 +123,7 @@ int saveLine(Object *ll){
     SLL_Node *curr = ll->SLL->head;
     while(curr)
     {
-        char line[50] = "lines/";
+        char line[100] = "lines/";
         BusLine *DL = ((BusLine*)curr->info);
         if(!DL) continue;
         
@@ -144,7 +142,7 @@ int saveStops(DoubleList *dl, char *path){
     if(!dl|| !path)
         return 0;
     
-    FILE *file = fopen(path, "wb");
+    FILE *file = fopen(path, "wb+");
 
     if(!file)
         return 0;

@@ -6,19 +6,20 @@
 #include "simpleLinkedList.h"
 #include "doubleList.h"
 #include <stdio.h>
+#include <string.h>
 
-// Apenas aviso que Object existe — NÃO DEFINO.
+
 typedef struct Object Object;
 
 typedef struct SLL_Data {
     DoubleList *list;
-    char name[10];
-    char enterprise[15];
+    char name[20];
+    char enterprise[20];
 } BusLine;
 
 typedef struct data_type {
     int id;
-    char nome[10];
+    char nome[20];
 } BusStop;
 
 typedef BusStop data_type;
