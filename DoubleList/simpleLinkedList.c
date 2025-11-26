@@ -76,8 +76,6 @@ int endRemove(linkedList *L){
     return(endRemove_rec(L, &q, &p));
 }
 
-
-
 void destroy_rec(SLL_Node **p){
     if (*p == NULL) return;
     destroy_rec(&((*p)->next));
