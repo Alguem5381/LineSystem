@@ -128,7 +128,7 @@ int openLine(wchar_t *str, BusLine *list){
 
         *novo = temp;
 
-        if(!add(list->list, novo)){
+        if(!append(list->list, novo)){
             free(novo);
             fclose(file);
             return 0;

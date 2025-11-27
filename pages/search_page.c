@@ -142,7 +142,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             break;
 
         case right:
-            if (is_popup_on) break;
+            if (is_popup_on || state == 2) break;
             if (state == 0) break; 
 
             search_bar_context.element_in_focus = 0;
@@ -151,7 +151,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             break;
 
         case left:
-            if (is_popup_on) break;
+            if (is_popup_on || state == 2) break;
 
             search_bar_context.element_in_focus = 1;
             time_bar_context.element_in_focus = 0;
@@ -159,7 +159,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             break;
 
         case up:
-            if (is_popup_on) break;
+            if (is_popup_on || state == 2) break;
 
             if (list_context.element_in_focus > 0)
             {
@@ -169,7 +169,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             break;
 
         case down:
-            if (is_popup_on) break;
+            if (is_popup_on || state == 2) break;
 
             if (list_context.element_in_focus < elements_length - 1)
             {
@@ -186,13 +186,15 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             break;
 
         case enter:
-            if (is_popup_on) {
+            if (is_popup_on) 
+            {
                 is_popup_on = 0;
                 need_draw = 1;
                 break;
             }
             
-            if (state == 2) {
+            if (state == 2) 
+            {
                 result.action = page_action_back;
                 running = 0;
                 break;
@@ -215,6 +217,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
 
         case common:
         case number:
+            if (state == 2) break;
             if (search_bar_context.element_in_focus)
             {
                 add_lastw(search_text, DBL, character);
@@ -229,6 +232,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             break;
 
         case backspace:
+            if (state == 2) break;
             if (search_bar_context.element_in_focus)
             {
                 if (!remove_lastw(search_text))

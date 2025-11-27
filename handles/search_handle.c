@@ -23,14 +23,8 @@ HandleResult init_search_handle(Style const *style, Object *data)
     
     // Arrays dinâmicos
     wchar_t **strings = NULL;
-    DoubleLinkedListNode **elements = NULL;
     int elements_length = 0;
-
-    // Passa NULL no filtro para pegar tudo
-    if (!get_all_stops_to_array(data, &elements, &elements_length, NULL)) {
-        elements_length = 0;
-    }
-    strings = create_stop_strings(elements, elements_length);
+    strings = create_unique_names_list(data, &elements_length, NULL);
 
     int running = 1;
     HandleResult handle_result = { .state = state_main };
@@ -58,8 +52,8 @@ HandleResult init_search_handle(Style const *style, Object *data)
             } 
             else if (page_state == 1) {
                 // Voltar do destino para a origem
-                
-                // Limpa persistência do estado atual Destino pois foi abandonado
+
+                // Limpa persistência do estado atual
                 free(persistence[current_persistence]);
                 persistence[current_persistence] = NULL;
                 
@@ -67,10 +61,9 @@ HandleResult init_search_handle(Style const *style, Object *data)
                 page_state--;
 
                 // Recarrega a lista completa sem filtro para a seleção da origem
-                free(elements);
-                free_string_array(strings, elements_length);
-                get_all_stops_to_array(data, &elements, &elements_length, NULL);
-                strings = create_stop_strings(elements, elements_length);
+                free(strings);
+                strings = NULL;
+                strings = create_unique_names_list(data, &elements_length, NULL);
             }
             else if (page_state == 2) {
                 // Voltar do resultado para destino
@@ -83,10 +76,9 @@ HandleResult init_search_handle(Style const *style, Object *data)
                 // Limpa informações de resultado
                 infomations[0] = L'\0';
 
-                free(elements);
-                free_string_array(strings, elements_length);
-                get_all_stops_to_array(data, &elements, &elements_length, NULL);
-                strings = create_stop_strings(elements, elements_length);
+                free(strings);
+                strings = NULL;
+                strings = create_unique_names_list(data, &elements_length, NULL);
             }
             break;
 
@@ -94,15 +86,9 @@ HandleResult init_search_handle(Style const *style, Object *data)
             // O usuário digitou algo na busca
             if (page_state == 0 || page_state == 1)
             {
-                free(elements);
-                elements = NULL;
-                free_string_array(strings, elements_length);
-
-                // Busca filtrada
-                get_all_stops_to_array(data, &elements, &elements_length, result.first_text);
-                
-                // Cria novas strings
-                strings = create_stop_strings(elements, elements_length);
+                free(strings);
+                strings = NULL;
+                strings = create_unique_names_list(data, &elements_length, result.first_text);
             }
             break;
 
@@ -113,19 +99,15 @@ HandleResult init_search_handle(Style const *style, Object *data)
                 if (result.selected_index < 0 || result.selected_index >= elements_length) break;
 
                 // Salva o nome da parada de origem
-                // elements é DoubleLinkedListNode**, info é BusStop*
-                BusStop *stop = (BusStop*)elements[result.selected_index]->info;
-                wcscpy(first_stop, stop->nome);
+                wcscpy(first_stop, strings[result.selected_index]);
 
                 // Avança estado
                 page_state++;
                 current_persistence++;
 
-                free(elements);
-                free_string_array(strings, elements_length);
-                
-                get_all_stops_to_array(data, &elements, &elements_length, NULL);
-                strings = create_stop_strings(elements, elements_length);
+                free(strings);
+                strings = NULL;
+                strings = create_unique_names_list(data, &elements_length, result.first_text);
             }
             else if (page_state == 1) // Destino Selecionado
             {
@@ -138,13 +120,11 @@ HandleResult init_search_handle(Style const *style, Object *data)
 
                 if (result.selected_index < 0 || result.selected_index >= elements_length) break;
 
-                BusStop *stop_dest = (BusStop*)elements[result.selected_index]->info;
-
                 // Prepara busca de rota
                 Hours arrival;
                 string_to_time(result.first_text, &arrival);
                 
-                RouteResult routeResult = find_best_route(data, first_stop, stop_dest->nome, arrival);
+                RouteResult routeResult = find_best_route(data, first_stop, strings[result.selected_index], arrival);
 
                 // Formata Resultado
                 if (routeResult.found) {
@@ -177,8 +157,8 @@ HandleResult init_search_handle(Style const *style, Object *data)
         if(persistence[i]) free(persistence[i]);
     }
 
-    free_string_array(strings, elements_length);
-    free(elements); // Free no array de ponteiros
+    free(strings);
+    strings = NULL;
 
     return handle_result;
 }

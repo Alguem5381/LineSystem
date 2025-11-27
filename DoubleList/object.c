@@ -111,42 +111,6 @@ int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise)
     return 1;
 }
 
-// Argumentos char mudaram para wchar_t
-int insertBusStop(Object *obj, wchar_t *line_number, wchar_t *name, Hours departure_time, Hours arrival_time)
-{
-    if (!obj || !obj->SLL) return 0;
-
-    BusStop *stop = malloc(sizeof(BusStop));
-    if (!stop) return 0;
-
-    // wcscpy substitui strcpy
-    wcscpy(stop->nome, name);
-    stop->arrival_time = arrival_time;
-    stop->departure_time = departure_time;
-
-    SimpleLinkedListNode *curr = obj->SLL->head;
-
-    while (curr) {
-        BusLine *line = (BusLine*) curr->info;
-
-        // wcscmp substitui strcmp
-        if (line && !wcscmp(line->name, line_number)) {
-
-            if (!add(line->list, stop)) {
-                free(stop);
-                return 0;
-            }
-
-            return 1;
-        }
-
-        curr = curr->next;
-    }
-
-    free(stop);
-    return 0;
-}
-
 // Argumento char mudou para wchar_t
 int hasBusLine(Object *obj, wchar_t *name){
     SimpleLinkedListNode *curr = obj->SLL->head;
@@ -537,9 +501,7 @@ wchar_t **create_stop_strings(DoubleLinkedListNode **node_array, int length)
         string_array[i] = malloc(buffer_size * sizeof(wchar_t));
 
         if (!string_array[i]) 
-        {
             return NULL; 
-        }
 
         swprintf(string_array[i], buffer_size, 
             L"%-20ls Saída: %02dh%02dm | Chegada: %02dh%02dm", 
@@ -566,16 +528,14 @@ wchar_t **create_line_strings(SimpleLinkedListNode **node_array, int length)
         int buffer_size = 128;
         string_array[i] = malloc(buffer_size * sizeof(wchar_t));
 
-        if (!string_array[i]) {
-            return NULL; 
-        }
+        if (!string_array[i]) 
+            return NULL;
 
         wchar_t *status_text;
-        if (line->list == NULL || line->list->head == NULL || line->list->size < 1) {
+        if (line->list == NULL || line->list->head == NULL || line->list->size < 1) 
             status_text = L"(Em Aberto)"; // Sem paradas cadastradas ou com uma única parada
-        } else {
+        else 
             status_text = L"(Ativa)";
-        }
 
         swprintf(string_array[i], buffer_size, 
             L"%-20ls | %-20ls | %ls", 
@@ -654,4 +614,103 @@ int insertStopAfter(BusLine *line, DoubleLinkedListNode *prev_node, BusStop *new
 
     dl->size++;
     return 1;
+}
+
+//Auxiliar
+int compare_wide_strings(const void *a, const void *b) 
+{
+    const wchar_t **str_a = (const wchar_t **)a;
+    const wchar_t **str_b = (const wchar_t **)b;
+    return wcscmp(*str_a, *str_b);
+}
+
+// Retorna um array de strings unicas
+wchar_t **create_unique_names_list(Object *data, int *out_length, wchar_t *search_term)
+{
+    int capacity = 0;
+    
+    // Conta total de paradas no sistema
+    SimpleLinkedListNode *line_node = data->SLL->head;
+    while (line_node) 
+    {
+        BusLine *line = (BusLine*)line_node->info;
+        if (line && line->list) capacity += line->list->size;
+        line_node = line_node->next;
+    }
+
+    if (capacity == 0) 
+    {
+        *out_length = 0;
+        return NULL;
+    }
+
+    // Aloca vetor temporário
+    wchar_t **temp_names = malloc(capacity * sizeof(wchar_t*));
+    int count = 0;
+
+    // Coleta os ponteiros dos nomes
+    line_node = data->SLL->head;
+    while (line_node) 
+    {
+        BusLine *line = (BusLine*)line_node->info;
+        if (line && line->list) 
+        {
+            DoubleLinkedListNode *stop_node = line->list->head;
+            DoubleLinkedListNode *start = stop_node;
+            if (stop_node) 
+            {
+                do 
+                {
+                    BusStop *stop = (BusStop*)stop_node->info;
+                    
+                    // Aplica o filtro de texto se ele existir
+                    int match = 1;
+                    if (search_term && wcslen(search_term) > 0)
+                         if (!wcsstr(stop->nome, search_term)) match = 0; // Se não contem, ignora
+
+                    if (match) 
+                        temp_names[count++] = stop->nome; // Guarda só o ponteiro
+                    
+                    stop_node = stop_node->next;
+                } while (stop_node != start);
+            }
+        }
+        line_node = line_node->next;
+    }
+
+    // Nenhum tinha nomes parecidos
+    if (count == 0) 
+    {
+        free(temp_names);
+        *out_length = 0;
+        return NULL;
+    }
+
+    // Ordena
+    qsort(temp_names, count, sizeof(wchar_t*), compare_wide_strings);
+
+    // Filtra
+    wchar_t **unique_list = malloc(count * sizeof(wchar_t*));
+    int unique_count = 0;
+
+    if (count > 0) {
+        // Aponta para o endereço original do primeiro
+        unique_list[0] = temp_names[0]; 
+        unique_count++;
+
+        for (int i = 1; i < count; i++) 
+        {
+            // Se for diferente do anterior
+            if (wcscmp(temp_names[i], temp_names[i-1]) != 0) 
+            {
+                unique_list[unique_count] = temp_names[i];
+                unique_count++;
+            }
+        }
+    }
+
+    free(temp_names); // Libera o vetor temporário de coleta
+    *out_length = unique_count;
+
+    return unique_list;
 }

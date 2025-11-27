@@ -41,12 +41,12 @@ typedef struct DoubleLinkedList{
 void create(DoubleLinkedList *list);
 
 /**
- * @brief Insere 1 Node na lista.
+ * @brief Insere 1 Node no fim da lista.
  * @param Recebe como parametro 1 ponteiro DoubleLinkedList e o 1 ponteiro
  * DataType para ser inserido na lista.
  * @return retorna 1 se conseguir inserir ou 0 caso nao consiga.
  */
-int add(DoubleLinkedList *list, DataType *data);
+int append(DoubleLinkedList *dl, DataType *data);
 
 /**
  * @brief Remove Node.

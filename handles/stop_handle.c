@@ -77,7 +77,6 @@ HandleResult init_stop_handle(Style const *style, SimpleLinkedListNode *line_nod
 
             if (!wcscmp(result.first_text, L"delete"))
             {
-                // CORREÇÃO 2: Passar a Struct BusLine*, não o Nó da lista
                 if (elements && result.selected_index < elements_length) {
                     removeStopNode(current_bus_line, elements[result.selected_index]);
                 }
