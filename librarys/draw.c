@@ -84,23 +84,33 @@ int draw_text_box(wchar_t const *text, DrawContext const *context)
 {
     Coordinates coordinates;
 
-    if (!define_coordinates(&coordinates, context, 1, 9) || !text || !context)
+    if (!define_coordinates(&coordinates, context, 3, 9) || !text || !context)
         return 0;
 
     attron(COLOR_PAIR(context->default_pair_color));
     draw_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
 
-    mvaddnwstr(coordinates.vertical_middle, coordinates.initial_x + 1, text, coordinates.final_x - 2);
+    mvaddnwstr(coordinates.vertical_middle, coordinates.initial_x + 1, text, coordinates.width - 2);
     attroff(COLOR_PAIR(context->default_pair_color));
 
-    attron(COLOR_PAIR(context->default_border_color));
-    draw_frame_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
-    attroff(COLOR_PAIR(context->default_border_color));
+    // Nesse caso, o elemento em foco é usado diferente. Caso seja diferente de 0, a caixa fica com a borda em foco
+    if (context->element_in_focus)
+    {
+        attron(COLOR_PAIR(context->on_focus_border_color));
+        draw_frame_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
+        attroff(COLOR_PAIR(context->on_focus_border_color));
+    }
+    else
+    {
+        attron(COLOR_PAIR(context->default_border_color));
+        draw_frame_box(coordinates.initial_x, coordinates.vertical_middle - 1, coordinates.final_x, coordinates.vertical_middle + 1);
+        attroff(COLOR_PAIR(context->default_border_color));
+    }
 
     return 1;
 }
 
-int draw_base_page(wchar_t *title, DrawContext const *context)
+int draw_base_page(wchar_t const *title, DrawContext const *context)
 {
     if (context->endx < 10 || context->endy < 8 || !title || !context || wcslen(title) + 4 > context->endx)
         return 0;
@@ -120,7 +130,7 @@ int draw_base_page(wchar_t *title, DrawContext const *context)
     return 1;
 }
 
-int draw_message_dialog(wchar_t *message, DrawContext const *context)
+int draw_message_dialog(wchar_t const *message, DrawContext const *context)
 {
     Coordinates coordinates;
 
@@ -169,7 +179,7 @@ int draw_message_dialog(wchar_t *message, DrawContext const *context)
     return 1;
 }
 
-int draw_yes_or_no_dialog(wchar_t *message, DrawContext const *context)
+int draw_yes_or_no_dialog(wchar_t const *message, DrawContext const *context)
 {
     Coordinates coordinates;
 
@@ -280,7 +290,7 @@ int draw_list(wchar_t **elements, int array_length, DrawContext const *context)
     Coordinates coordinates;
 
     // Se a definição de coordenadas falhar ou se os valores de parametros não forem validos então retorna erro
-    if (!define_coordinates(&coordinates, context, 9, 9) || array_length < 0 || !elements || !context)
+    if (!define_coordinates(&coordinates, context, 9, 9) || !context)
         return 0;
 
     attron(COLOR_PAIR(context->default_pair_color)); // Ativa a cor padrão
@@ -289,6 +299,7 @@ int draw_list(wchar_t **elements, int array_length, DrawContext const *context)
     attroff(COLOR_PAIR(context->default_pair_color)); // Desativa a cor padrão
 
     wchar_t buffer[1024];
+    int max_width = coordinates.width - 2;
 
     if (array_length)
     {
@@ -298,21 +309,21 @@ int draw_list(wchar_t **elements, int array_length, DrawContext const *context)
             attron(COLOR_PAIR(context->default_pair_color)); // Ativa a cor padrão
             for (int index = context->element_in_focus, pos_in_y = coordinates.height / 2 + coordinates.initial_y; pos_in_y > coordinates.initial_y && index >= 0; index--, pos_in_y--)
             {
-                swprintf(buffer, 1024, L"%-*ls", coordinates.width - 2, elements[index]); // Escreve a string dentro do buffer sem ultrapassar as bordas, por isso coordinates.width - 2
-                mvaddwstr(pos_in_y, coordinates.initial_x + 1, buffer);                   // intial_x + 1 por causa da borda
+                mvhline(pos_in_y, coordinates.initial_x + 1, ' ', max_width); // Escreve a string dentro do buffer sem ultrapassar as bordas, por isso coordinates.width - 2
+                mvaddnwstr(pos_in_y, coordinates.initial_x + 1, elements[index], max_width);                   // intial_x + 1 por causa da borda
             }
 
             // Agora ele desenha os elementos do centro para a parte inferior da caixa partindo do indice para o fim do vetor
             for (int index = context->element_in_focus, pos_in_y = coordinates.height / 2 + coordinates.initial_y; pos_in_y < coordinates.final_y && index < array_length; index++, pos_in_y++)
             {
-                swprintf(buffer, 1024, L"%-*ls", coordinates.width - 2, elements[index]);
-                mvaddwstr(pos_in_y, coordinates.initial_x + 1, buffer);
+                mvhline(pos_in_y, coordinates.initial_x + 1, ' ', max_width);
+                mvaddnwstr(pos_in_y, coordinates.initial_x + 1, elements[index], max_width);
             }
             attroff(COLOR_PAIR(context->default_pair_color)); // Desativa a cor padrão
 
             attron(COLOR_PAIR(context->on_focus_pair_color)); // Ativa a cor de foco
-            swprintf(buffer, 1024, L"%-*ls", coordinates.width - 2, elements[context->element_in_focus]);
-            mvaddwstr(coordinates.initial_y + coordinates.height / 2, coordinates.initial_x + 1, buffer); // Escreve o texto em foco no centro da caixa
+            mvhline(coordinates.initial_y + coordinates.height / 2, coordinates.initial_x + 1, ' ', max_width);
+            mvaddnwstr(coordinates.initial_y + coordinates.height / 2, coordinates.initial_x + 1, elements[context->element_in_focus], max_width); // Escreve o texto em foco no centro da caixa
             attroff(COLOR_PAIR(context->on_focus_pair_color));                                            // Desativa a cor de foco
         }
         else
@@ -321,15 +332,15 @@ int draw_list(wchar_t **elements, int array_length, DrawContext const *context)
             attron(COLOR_PAIR(context->default_pair_color));
             for (int index = 0, pos_in_y = 1 + coordinates.initial_y; pos_in_y < coordinates.final_y && index < array_length; index++, pos_in_y++)
             {
-                swprintf(buffer, 1024, L"%-*ls", coordinates.width - 2, elements[index]);
-                mvaddwstr(pos_in_y, coordinates.initial_x + 1, buffer);
+                mvhline(pos_in_y, coordinates.initial_x + 1, ' ', max_width);
+                mvaddnwstr(pos_in_y, coordinates.initial_x + 1, elements[index], max_width);
             }
             attroff(COLOR_PAIR(context->default_pair_color));
 
             // Depois desenha o elemento em foco posicionando ele relativo ao topo da caixa usando o índice
             attron(COLOR_PAIR(context->on_focus_pair_color)); // Ativa a cor de foco
-            swprintf(buffer, 1024, L"%-*ls", coordinates.width - 2, elements[context->element_in_focus]);
-            mvaddwstr(coordinates.initial_y + context->element_in_focus + 1, coordinates.initial_x + 1, buffer);
+            mvhline(coordinates.initial_y + context->element_in_focus + 1, coordinates.initial_x + 1, ' ', max_width);
+            mvaddnwstr(coordinates.initial_y + context->element_in_focus + 1, coordinates.initial_x + 1, elements[context->element_in_focus], max_width);
             attroff(COLOR_PAIR(context->on_focus_pair_color)); // Desativa a cor de foco
         }
     }
@@ -342,12 +353,12 @@ int draw_list(wchar_t **elements, int array_length, DrawContext const *context)
     return 1;
 }
 
-int draw_label(wchar_t *text, DrawContext const *context)
+int draw_label(wchar_t const *text, DrawContext const *context)
 {
     Coordinates coordinates;
 
     // Se a definição de coordenadas falhar ou se os valores de parametros não forem validos então retorna erro
-    if (!define_coordinates(&coordinates, context, 6, 6) || !text || !context)
+    if (!define_coordinates(&coordinates, context, 6, 6) || !context)
         return 0;
 
     // Variaveis de posição x e y para manipular a posição do texto
@@ -355,46 +366,57 @@ int draw_label(wchar_t *text, DrawContext const *context)
     int pos_x = coordinates.initial_x + 3;
 
     // Tamanho do texto
-    int text_length = wcslen(text);
+    int text_length = 0;
+    if (text)
+        text_length = wcslen(text);
 
     // Ponteiro para navegar pelo texto
-    wchar_t *dummy = text;
+    wchar_t *dummy = (wchar_t *)text;
 
     attron(COLOR_PAIR(context->default_pair_color)); // Ativa a cor padrão
     // Desenha a caixa
     draw_box(coordinates.initial_x, coordinates.initial_y, coordinates.final_x, coordinates.final_y);
     attroff(COLOR_PAIR(context->default_pair_color)); // Desativa a cor padrão
 
-    attron(COLOR_PAIR(context->default_pair_color));
-    // Ele continuara no loop enquanto o ponteiro temporário não passar do endereço da adição entre o endereço inícial do texto e o tamanho dele
-    // e em quanto a posição y não chegar a 2 pixel da borda inferior da caixa
-    while (dummy < text + text_length && pos_y < coordinates.final_y - 2)
+    if (text)
     {
-        // Tamanho da primeira palavra no endereço temporário
-        int temp = wcscspn(dummy, L" \0");
-
-        // Se na posição atual mais o tamanho da palavra estiver estiver a dois pixels da borda
-        if (pos_x + temp > coordinates.final_x - 2)
+        attron(COLOR_PAIR(context->default_pair_color));
+        
+        while (dummy < text + text_length && pos_y < coordinates.final_y - 2)
         {
-            pos_y++;                           // Ele desce a posição no y
-            pos_x = coordinates.initial_x + 3; // e reseta a posição no x
+            int temp = wcscspn(dummy, L" \n\0");
+
+            // Verifica se precisa quebrar linha automaticamente (por falta de espaço)
+            if (pos_x + temp > coordinates.final_x - 2)
+            {
+                pos_y++;                           
+                pos_x = coordinates.initial_x + 3; 
+            }
+
+            // Desenha a palavra
+            if (temp < coordinates.width - 4)
+                mvaddnwstr(pos_y, pos_x, dummy, temp);
+
+            pos_x += temp; 
+            dummy += temp; 
+
+            // Tratamento dos separadores
+            if (*dummy == L' ') 
+            {
+                mvaddwstr(pos_y, pos_x, L" "); // Desenha o espaço
+                dummy++; 
+                pos_x++; 
+            }
+            // Tratamento do \n
+            else if (*dummy == L'\n')
+            {
+                pos_y++; // Desce uma linha
+                pos_x = coordinates.initial_x + 3; // Volta para o canto esquerdo
+                dummy++; // Pula o caractere \n
+            }
         }
-
-        // Para evitar desenha uma palavra maior que a largura da caixa
-        if (temp < coordinates.width - 4)
-            // Na posições indicadas desenha a palavra
-            mvaddnwstr(pos_y, pos_x, dummy, temp);
-
-        pos_x += temp; //"Anda" no x para a esquerda
-        dummy += temp; // e "Anda" o ponteiro temporario dentro da string principal
-
-        if (*dummy == L' ') // Se nessa posição dentro do texto houver um espaço então ele pula
-        {
-            dummy++; // Anda o ponteiro
-            pos_x++; // e o x
-        }
+        attroff(COLOR_PAIR(context->default_pair_color)); 
     }
-    attroff(COLOR_PAIR(context->default_pair_color)); // Desativa a cor padrão
 
     attron(COLOR_PAIR(context->default_border_color)); // Ativa a cor de borda
     // Desenha a borda da caixa

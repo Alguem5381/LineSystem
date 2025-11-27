@@ -2,86 +2,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void create(DoubleList *list) {
+void create(DoubleLinkedList *list) {
   list->head = NULL;
   list->size = 0;
 }
 
-int add(DoubleList *list, DataType *data) {
-  Node *n = (Node *)malloc(sizeof(Node));
+int append(DoubleLinkedList *dl, DataType *data)
+{
+    if (!dl || !data) return 0;
 
-  if (n == NULL)
-    return 0;
+    DoubleLinkedListNode *new_node = malloc(sizeof(DoubleLinkedListNode));
+    if (!new_node) return 0;
 
-  n->info = data;
+    new_node->info = data;
 
-  if (isEmpty(list)) {
-    list->head = n;
-    n->next = list->head;
-    n->prev = list->head;
-  } else {
-    n->next = list->head;
+    if (dl->head == NULL) 
+    {
+        dl->head = new_node;
+        new_node->next = new_node;
+        new_node->prev = new_node;
+    } else 
+    {
+        DoubleLinkedListNode *tail = dl->head->prev;
 
-    list->head->prev->next = n;
-    n->prev = list->head->prev;
+        new_node->next = dl->head;
+        new_node->prev = tail;
 
-    list->head->prev = n;
-    n->next = list->head;
-
-    list->head = n;
-  }
-  list->size += 1;
-  return 1;
-};
-
-int removeData(DoubleList *list, DataType *data) {
-  if (isEmpty(list))
-    return -1;
-
-  Node *n = list->head;
-
-  for (int i = 0; i < list->size; i++, n = n->next) {
-    if (comp(n->info, data)) {
-      if (list->size == 2)
-        list->head = n->next;
-      else if (list->size == 1)
-        list->head = NULL;
-      removeNode(n);
-      list->size -= 1;
-      return 1;
+        tail->next = new_node;
+        dl->head->prev = new_node;
     }
-  }
 
-  return 0;
+    dl->size++;
+    return 1;
 }
 
-void removeNode(Node *n) {
+void removeNode(DoubleLinkedListNode *n) {
   n->prev->next = n->next;
   n->next->prev = n->prev;
   free(n);
 }
 
-DataType const *search(DoubleList *list, DataType *data){
-  Node *n = list->head;
-
-  for (int i = 0; i < list->size; i++, n = n->next) {
-      if(comp(n->info, data))
-          return n->info;
-  }
-
-  return NULL;
-}
-
-int isEmpty(DoubleList *list) { return (list->size == 0); }
-
-void show(DoubleList *list) {
-  if (isEmpty(list))
-    return;
-
-  Node *n = list->head;
-
-  for (int i = 0; i < list->size; i++, n = n->next)
-    showData(n->info);
-  printf("\n");
-}
-
+int isEmpty(DoubleLinkedList *list) { return (list->size == 0); }

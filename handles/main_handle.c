@@ -1,29 +1,53 @@
 #include <main_handle.h>
 #include <main_page.h>
+#include <stdlib.h>
 
-States init_main_handle(Style const *style)
+HandleResult init_main_handle(Style const *style)
 {
-    //Loop principal
+    PageArgs args =
+    {
+        .style = style,
+        .persistence = NULL,
+        .state = 0,
+        .throw_popup = 0
+    };
 
+    //Variaveis do loop
     int running = 1;
-    States state;
+    HandleResult handle_result =
+    {
+        .state = state_exit,
+        .first_value = NULL
+    };
 
     while(running)
     {
-        PageResult result = init_main_page(style);
+        PageResult result = init_main_page(args);
 
         //Manipulação do resultado da página
 
         switch (result.action)
         {
         case page_action_back:
-            state = state_exit;
+            handle_result.state = state_exit;
             running = 0;
             break;
 
         case page_action_select:
-            if(result.selected_index == 0)
-                state = state_search;
+            switch (result.selected_index)
+            {
+            case 0: 
+                handle_result.state = state_search;
+                break;
+
+            case 1: 
+                handle_result.state = state_login; 
+                break;
+
+            default:
+                break;
+            }
+
             running = 0;
             break;
 
@@ -32,5 +56,5 @@ States init_main_handle(Style const *style)
         }
     }
 
-    return state;
+    return handle_result;
 }

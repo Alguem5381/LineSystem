@@ -2,7 +2,7 @@
 #define DOUBLE_LIST_H
 
 /**
- * @defgroup DoubleList
+ * @defgroup DoubleLinkedList
  * @brief Lista Duplamente Encadeada Circular.
  * @warning Para utilizar, deve declarar os dados de DataType e a funcao comp,
  * que sera usada para comparar os DataTypes.
@@ -10,7 +10,7 @@
  */
 
 /**
- * @addtgroup DoubleList
+ * @addtgroup DoubleLinkedList
  *
  * @{
  */
@@ -20,86 +20,46 @@
  * @brief Struct que sera utilizado para armazenar as informacoes.
  * @warning Devera ser definido pelo usuario.
  */
-typedef struct data_type DataType;
+typedef struct DoubleLinkedListData DataType;
 
-typedef struct node {
+typedef struct DoubleLinkedListNode {
     DataType *info;
-    struct node *next;
-    struct node *prev;
-} Node;
+    struct DoubleLinkedListNode *next;
+    struct DoubleLinkedListNode *prev;
+} DoubleLinkedListNode;
 
-typedef struct {
-    Node *head;
+typedef struct DoubleLinkedList{
+    DoubleLinkedListNode *head;
     int size;
-} DoubleList;
+} DoubleLinkedList;
 
 
 /**
  * @brief Cria a lista.
- * @param Recebe o ponteiro de uma DoubleList.
+ * @param Recebe o ponteiro de uma DoubleLinkedList.
  */
-void create(DoubleList *list);
+void create(DoubleLinkedList *list);
 
 /**
- * @brief Insere 1 Node na lista.
- * @param Recebe como parametro 1 ponteiro DoubleList e o 1 ponteiro
+ * @brief Insere 1 Node no fim da lista.
+ * @param Recebe como parametro 1 ponteiro DoubleLinkedList e o 1 ponteiro
  * DataType para ser inserido na lista.
  * @return retorna 1 se conseguir inserir ou 0 caso nao consiga.
  */
-int add(DoubleList *list, DataType *data);
-
-/**
- * @brief Remove 1 elemento da lista.
- * @param Recebe como parametro 1 ponteiro DoubleLIst e o 1 ponteiro
- * DataTyp que deseja remover da lista.
- * @return retorna 1 se conseguir remover, 0 casa nao achou o DataType ou -1 se
- * a lista estiver vazia.
- */
-int removeData(DoubleList *list, DataType *data);
+int append(DoubleLinkedList *dl, DataType *data);
 
 /**
  * @brief Remove Node.
  * @param Recebe como parameteo o no para ser removido
  */
-void removeNode(Node *n);
-
-/**
- * @brief Procurar elemento na lista.
- * @param Recebe como parametro 1 ponteiro DoubleLIst e o 1 ponteiro DataTyp que
- * deseja procurar na lista.
- * @return Retorna um ponteiro constante do elemento achado, evitando que o
- * conteudo seja alterado, ou NULL, caso o elemento nao seja encontrado.
- */
-DataType const *search(DoubleList *list, DataType *data);
+void removeNode(DoubleLinkedListNode *n);
 
 /**
  * @brief Avisa se a lista esta vazia.
- * @param Recebe como parametro 1 ponteiro de uma DoubleList
+ * @param Recebe como parametro 1 ponteiro de uma DoubleLinkedList
  * @return Retorna um se esta vazia e 0 se nao.
  */
-int isEmpty(DoubleList *list);
-
-/**
- * @brief Compara elementos na lista, devera ser difinida pelo usuario.
- * @param Recebe como parametro 2 ponteiros DataType
- * @warning Essa funcao sera usada nas operacoes da lista!
- */
-int comp(DataType *data1, DataType *data2);
-
-/**
- * @brief Exibe a info dos elementos da lista.
- * @param Recebe como parametro 1 ponteiro de uma DoubleList
- * @warning Essa funcao exibira os dados usando a funcao showData(), que deve
- * ser definida pelo usuario!
- */
-void show(DoubleList *list);
-
-/**
- * @brief Exibe os dados do DataType, devera ser difinida pelo usuario.
- * @param recebe como parametro 1 ponteiro DataType
- * @warning Essa funcao sera usada nas operacoes da lista!
- */
-void showData(DataType *data);
+int isEmpty(DoubleLinkedList *list);
 
 /** @} */
 

@@ -3,7 +3,8 @@
 
 #include <states.h>
 #include <style.h>
+#include <object.h>
 
-PageResult init_search_page(Style const *style, wchar_t const *search_text, wchar_t const *label_text, wchar_t const *elements, int const elements_length);
+HandleResult init_search_handle(Style const *style, Object *data);
 
 #endif //SEARCH_HANDLE_H
