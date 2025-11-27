@@ -1,3 +1,6 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela*/
 #ifndef DOUBLE_LIST_H
 #define DOUBLE_LIST_H
 

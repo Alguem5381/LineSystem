@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #ifndef DRAW_H
 #define DRAW_H
 

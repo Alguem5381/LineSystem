@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include <style.h>
 
 void set_style(Style const *style, DrawContext *general_context)

@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #ifndef HOURS_H
 #define HOURS_H
 

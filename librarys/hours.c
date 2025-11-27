@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include <hours.h>
 #include <letter.h>
 

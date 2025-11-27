@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <ncursesw/ncurses.h>
 #include <template_page.h>

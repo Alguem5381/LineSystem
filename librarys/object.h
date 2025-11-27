@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #ifndef OBJECT_H
 #define OBJECT_H
 
@@ -37,7 +41,6 @@ int loadData(Object *object);
 int saveObject(Object *object);
 
 int deleteObject(Object *object);
-int deleteLine(DoubleLinkedList *dl);
 int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise);
 int hasBusLine(Object *obj, wchar_t *name);
 int insertStopAfter(BusLine *line, DoubleLinkedListNode *prev_node, BusStop *new_data);

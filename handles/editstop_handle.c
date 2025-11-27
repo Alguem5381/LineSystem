@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include <editstop_handle.h>
 #include <editstop_page.h>
 #include <stdlib.h>

@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <ncursesw/ncurses.h>
 #include <newline_page.h>
@@ -140,6 +144,7 @@ PageResult init_newline_page(PageArgs args, wchar_t const *error)
             break;
 
         case common:
+            if (is_popup_on) break;
             if (second_text_context.element_in_focus)
             {
                 add_lastw(second_text, DBL, character);
@@ -148,6 +153,7 @@ PageResult init_newline_page(PageArgs args, wchar_t const *error)
             break;
 
         case number:
+            if (is_popup_on) break;
             if (first_text_context.element_in_focus)
                 add_lastw(first_text, DBL, character);
             else if (second_text_context.element_in_focus)

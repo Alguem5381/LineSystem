@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include <login_handle.h>
 #include <login_page.h>
 #include <stdlib.h>

@@ -1,12 +1,14 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include "fileMenager.h"
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <wchar.h>   // Necessário para wide chars
-#include <stdlib.h>  // Necessário para malloc, free, wcstombs
-#include <locale.h>  // Recomendado ter setlocale no main
+#include <wchar.h>
+#include <stdlib.h>
 
-// Define auxiliar para converter paths Wide para Char (necessário para fopen/mkdir)
 // Retorna 1 se sucesso, 0 se falha
 int wide_path_to_multibyte(const wchar_t *wide_path, char *mb_path, size_t max_size) {
     size_t res = wcstombs(mb_path, wide_path, max_size);
@@ -180,7 +182,6 @@ int saveLine(Object *obj){
     return 1;
 }
 
-// Note: path aqui chega como char* pois já convertemos antes
 int saveStops(DoubleLinkedList *dl, char *path){
     if(!dl|| !path)
         return 0;
@@ -194,8 +195,6 @@ int saveStops(DoubleLinkedList *dl, char *path){
     
     for (int i = 0; i < dl->size; i++)
     {
-        // Gravação binária pura. Se DataType tiver wchar_t, gravará 4 bytes por char.
-        // ATENÇÃO: Isso torna os arquivos .dat incompatíveis com a versão anterior do seu programa.
         fwrite(curr->info, sizeof(DataType), 1, file);
         curr = curr->next;
     }
@@ -204,7 +203,6 @@ int saveStops(DoubleLinkedList *dl, char *path){
     return 1;
 }
 
-// path aqui é o NOME da linha (wide), ex: L"Linha 1"
 int removeLine(wchar_t *path){
     if (!path) return 0;
 

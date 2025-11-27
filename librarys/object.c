@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include "object.h"
 #include "fileMenager.h"
 #include <wchar.h>   // Necessário para wcscpy, wcscmp
@@ -21,16 +25,12 @@ int defineObject(Object *object)
 
 int deleteObject(Object *obj){
     if (!obj || !obj->SLL) return 0;
-    
+
     SimpleLinkedListNode *curr = obj->SLL->head;
-    
-    // O loop original apenas percorria sem liberar o conteudo 'interno' (BusLine).
-    // Assumindo que destroy_sll cuida dos nós da lista simples.
-    // Se precisar liberar a lista dupla dentro de BusLine, faça aqui:
+
     while (curr)
     {
         BusLine *DL = ((BusLine*)curr->info);
-        // Exemplo: deleteLine(DL->list); free(DL->list); free(DL);
         curr = curr->next;
     }
     destroy_sll(obj->SLL);
@@ -47,28 +47,6 @@ int loadData(Object *object) {
 int saveObject(Object *object) {
     if (!object || !object->SLL) return 0;
     return saveToFile(object); 
-}
-
-// Funções expostas para os handles
-int deleteLine(DoubleLinkedList *dl) {
-    if (!dl || !dl->head) return 0;
-
-    DoubleLinkedListNode *curr = dl->head;
-    DoubleLinkedListNode *next;
-
-    do {
-        next = curr->next;
-        
-        free(curr); // Libera o nó
-        // Nota: Se 'info' (DataType) for um ponteiro alocado, precisa de free(curr->info) antes
-        
-        curr = next;
-    } while (curr != dl->head); // Assumindo lista circular baseado no loop original
-
-    dl->head = NULL;
-    dl->size = 0;
-
-    return 1;
 }
 
 // Argumentos char mudaram para wchar_t
@@ -159,7 +137,7 @@ RouteResult find_best_route(Object *obj, wchar_t *origin_name, wchar_t *dest_nam
                     // Só gastamos processamento procurando a origem se esse destino
                     // for potencialmente melhor que o que já temos.
                     // ou se ainda não tem a melhor rota.
-                    if (!best_route.found || current_diff < min_diff) 
+                    if ((!best_route.found || current_diff < min_diff) && arrival_min >= target_min)
                     {
                         // Procura a origem para trás
                         DoubleLinkedListNode *curr_back = dest_node->prev;
@@ -176,7 +154,8 @@ RouteResult find_best_route(Object *obj, wchar_t *origin_name, wchar_t *dest_nam
                                 // O ônibus precisa passar na origem antes do destino
                                 int departure_min = to_minutes(stop_origin->departure_time);
 
-                                if (departure_min < arrival_min) {
+                                if (departure_min < arrival_min) 
+                                {
                                     // Achamos uma rota válida e melhor que a anterior
                                     min_diff = current_diff;
 
@@ -459,7 +438,9 @@ int removeLineNode(Object *obj, SimpleLinkedListNode *target_node)
         if (curr == target_node)
         {
             BusLine *line = (BusLine*)curr->info;
-            
+
+            removeLine(line->name);
+
             if (line) {
                 // Limpa a lista de paradas dessa linha
                 if (line->list) 

@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include "simpleLinkedList.h"
 
 int get_size_sll(SimpleLinkedList *L){

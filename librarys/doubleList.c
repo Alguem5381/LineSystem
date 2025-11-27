@@ -1,3 +1,6 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela*/
 #include "doubleList.h"
 #include <stdio.h>
 #include <stdlib.h>

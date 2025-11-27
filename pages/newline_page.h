@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #ifndef NEWLINE_PAGE_H
 #define NEWLINE_PAGE_H
 

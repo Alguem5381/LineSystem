@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <ncursesw/ncurses.h>
 #include <newstop_page.h>
@@ -172,6 +176,7 @@ PageResult init_newstop_page(PageArgs args, wchar_t const *error, wchar_t *title
 
         case common:
         case number:
+            if (is_popup_on) break;
             if (first_text_context.element_in_focus)
                 add_lastw(first_text, DBL, character);
             else if (second_text_context.element_in_focus)
@@ -182,6 +187,7 @@ PageResult init_newstop_page(PageArgs args, wchar_t const *error, wchar_t *title
             break;
 
         case backspace:
+            if (is_popup_on) break;
             if (first_text_context.element_in_focus)
                 remove_lastw(first_text);
             else if (second_text_context.element_in_focus)

@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #ifndef NEWSTOP_HANDLE_H
 #define NEWSTOP_HANDLE_H
 

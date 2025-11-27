@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include <newstop_handle.h>
 #include <newstop_page.h>
 #include <stdlib.h>

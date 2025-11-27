@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #include <search_handle.h>
 #include <search_page.h>
 #include <stdlib.h>

@@ -1,3 +1,7 @@
+/* Júlio Cesar lima de Souza
+ * Rodrigo Marques Cabral
+ * Raul Vilela
+*/
 #ifndef SIMPLE_LINKED_LIST_H
 #define SIMPLE_LINKED_LIST_H
 #include <stdlib.h>
