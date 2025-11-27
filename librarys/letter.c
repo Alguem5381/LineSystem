@@ -1,4 +1,5 @@
 #include <letter.h>
+#include <stdlib.h>
 
 int is_letter(char const character)
 {
@@ -62,9 +63,9 @@ int add_lastw(wchar_t string[], int buffer_length, wchar_t character)
     return 1;
 }
 
-int is_emptyw(wchar_t string[])
+int is_emptyw(wchar_t *string)
 {
-    return !string[0];
+    return string[0] == L'\0';
 }
 
 int contains_wstr(wchar_t *needle, wchar_t *haystack)
@@ -75,4 +76,15 @@ int contains_wstr(wchar_t *needle, wchar_t *haystack)
     if (wcsstr(haystack, needle) != NULL)
         return 1;
     return 0;
+}
+
+void free_string_array(wchar_t **string_array, int length) {
+    if (!string_array) return;
+
+    for (int i = 0; i < length; i++) {
+        if (string_array[i]) {
+            free(string_array[i]);
+        }
+    }
+    free(string_array);
 }

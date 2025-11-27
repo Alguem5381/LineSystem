@@ -71,42 +71,6 @@ int deleteLine(DoubleLinkedList *dl) {
     return 1;
 }
 
-// Agora recebe wchar_t *name
-int removeByName(Object *obj, wchar_t *name) {
-    if (!obj || !obj->SLL || !obj->SLL->head) return 0;
-
-    SimpleLinkedListNode *curr = obj->SLL->head;
-    SimpleLinkedListNode *prev = NULL;
-
-    while (curr) {
-        BusLine *line = (BusLine*)curr->info;
-
-        // wcscmp substitui strcmp (retorna 0 se igual)
-        if (line && !wcscmp(line->name, name)) {
-            
-            // Limpa a lista interna antes de liberar a struct
-            deleteLine(line->list);
-            free(line->list); // Faltava liberar a struct da lista em si no original? Adicionei por segurança
-
-            if (prev == NULL) {
-                obj->SLL->head = curr->next;
-            } else {
-                prev->next = curr->next;
-            }
-
-            free(line); // Libera o payload
-            free(curr); // Libera o nó da lista
-
-            return 1;
-        }
-
-        prev = curr;
-        curr = curr->next;
-    }
-
-    return 0;
-}
-
 // Argumentos char mudaram para wchar_t
 int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise)
 {
@@ -131,7 +95,10 @@ int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise)
     // wcscpy substitui strcpy
     wcscpy(line->enterprise, enterprise);
     wcscpy(line->name, name);
-    
+
+    double_linked_list->head = NULL;
+    double_linked_list->size = 0;
+
     line->list = double_linked_list;
 
     if(!init_insert_sll(obj->SLL, line))
@@ -483,4 +450,208 @@ int get_stops_to_array(SimpleLinkedListNode *list_to_search, DoubleLinkedListNod
 
     *array_length = count;
     return 1; // Sucesso
+}
+
+//Auxiliar
+void clear_stops_list(DoubleLinkedList *dl) 
+{
+    if (!dl || !dl->head) return;
+
+    DoubleLinkedListNode *curr = dl->head;
+    DoubleLinkedListNode *next;
+
+    DoubleLinkedListNode *start = dl->head;
+
+    do 
+    {
+        next = curr->next;
+        
+        // Libera o conteúdo
+        if (curr->info) {
+            free(curr->info); 
+        }
+        
+        // Libera o nó
+        free(curr);
+        
+        curr = next;
+    } while (curr != start);
+
+    dl->head = NULL;
+    dl->size = 0;
+}
+
+// Remove um nó específico da lista de Linhas
+int removeLineNode(Object *obj, SimpleLinkedListNode *target_node)
+{
+    if (!obj || !obj->SLL || !obj->SLL->head || !target_node) 
+        return 0;
+
+    SimpleLinkedListNode *curr = obj->SLL->head;
+    SimpleLinkedListNode *prev = NULL;
+
+    while (curr) 
+    {
+        if (curr == target_node)
+        {
+            BusLine *line = (BusLine*)curr->info;
+            
+            if (line) {
+                // Limpa a lista de paradas dessa linha
+                if (line->list) 
+                {
+                    clear_stops_list(line->list);
+                    free(line->list);
+                }
+                free(line); // Libera a struct BusLine
+            }
+
+            if (prev == NULL) 
+                obj->SLL->head = curr->next;
+            else 
+                prev->next = curr->next;
+
+            free(curr); // Libera o nó da lista simples
+            return 1;
+        }
+
+        prev = curr;
+        curr = curr->next;
+    }
+
+    return 0; // Nó não pertence a esta lista
+}
+
+wchar_t **create_stop_strings(DoubleLinkedListNode **node_array, int length)
+{
+    if (!node_array || length <= 0) return NULL;
+
+    wchar_t **string_array = malloc(length * sizeof(wchar_t*));
+    if (!string_array) return NULL;
+
+    for (int i = 0; i < length; i++)
+    {
+        BusStop *stop = (BusStop*)node_array[i]->info;
+
+        int buffer_size = 128;
+        string_array[i] = malloc(buffer_size * sizeof(wchar_t));
+
+        if (!string_array[i]) 
+        {
+            return NULL; 
+        }
+
+        swprintf(string_array[i], buffer_size, 
+            L"%-20ls Saída: %02dh%02dm | Chegada: %02dh%02dm", 
+            stop->nome, 
+            stop->departure_time.hours, stop->departure_time.minutes,
+            stop->arrival_time.hours, stop->arrival_time.minutes
+        );
+    }
+
+    return string_array;
+}
+
+wchar_t **create_line_strings(SimpleLinkedListNode **node_array, int length)
+{
+    if (!node_array || length <= 0) return NULL;
+
+    wchar_t **string_array = malloc(length * sizeof(wchar_t*));
+    if (!string_array) return NULL;
+
+    for (int i = 0; i < length; i++)
+    {
+        BusLine *line = (BusLine*)node_array[i]->info;
+        
+        int buffer_size = 128;
+        string_array[i] = malloc(buffer_size * sizeof(wchar_t));
+
+        if (!string_array[i]) {
+            return NULL; 
+        }
+
+        wchar_t *status_text;
+        if (line->list == NULL || line->list->head == NULL || line->list->size < 1) {
+            status_text = L"(Em Aberto)"; // Sem paradas cadastradas ou com uma única parada
+        } else {
+            status_text = L"(Ativa)";
+        }
+
+        swprintf(string_array[i], buffer_size, 
+            L"%-20ls | %-20ls | %ls", 
+            line->name, 
+            line->enterprise, 
+            status_text
+        );
+    }
+
+    return string_array;
+}
+
+int removeStopNode(BusLine *line, DoubleLinkedListNode *target_node)
+{
+    // Validações de segurança
+    if (!line || !line->list || !target_node) 
+        return 0;
+
+    DoubleLinkedList *dl = line->list;
+
+    if (target_node->next == target_node) 
+    {
+        dl->head = NULL;
+        dl->size = 0;
+    } 
+    else 
+    {
+        target_node->prev->next = target_node->next;
+        target_node->next->prev = target_node->prev;
+
+        if (dl->head == target_node) 
+            dl->head = target_node->next;
+
+        dl->size--;
+    }
+
+    if (target_node->info) 
+        free(target_node->info);
+
+    free(target_node);
+
+    return 1;
+}
+
+// Insere uma nova parada após o nó de referência.
+// Se prev_node for NULL, insere no início ou cria a lista se estiver vazia.
+int insertStopAfter(BusLine *line, DoubleLinkedListNode *prev_node, BusStop *new_data)
+{
+    // Validações
+    if (!line || !line->list || !new_data) return 0;
+
+    DoubleLinkedListNode *new_node = malloc(sizeof(DoubleLinkedListNode));
+    if (!new_node) return 0;
+
+    new_node->info = new_data;
+
+    DoubleLinkedList *dl = line->list;
+
+    if (dl->head == NULL) 
+    {
+        new_node->next = new_node;
+        new_node->prev = new_node;
+
+        dl->head = new_node;
+    }
+    else if (prev_node != NULL) 
+    {
+        new_node->prev = prev_node;
+        new_node->next = prev_node->next;
+
+        prev_node->next->prev = new_node;
+        prev_node->next = new_node;
+    }
+    else
+        return 0;
+
+    dl->size++;
+    return 1;
 }

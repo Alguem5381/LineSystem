@@ -19,4 +19,6 @@ int is_emptyw(wchar_t string[]);
 
 int contains_wstr(wchar_t *needle, wchar_t *haystack);
 
+void free_string_array(wchar_t **string_array, int length);
+
 #endif //LETTER_H

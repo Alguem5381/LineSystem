@@ -5,12 +5,9 @@
 #include <stdlib.h>
 #include <letter.h>
 #include <keys.h>
-#include <stdlib.h>
 
-// (D)Default (B)Buffer (L) Length
 #define DBL 256
 
-// Struct para memória persistente
 typedef struct Persistence
 {
     wchar_t first_text[DBL];
@@ -19,101 +16,66 @@ typedef struct Persistence
     int selected;
 } Persistence;
 
-// Inicializador da página
-
-PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *first, wchar_t *second, wchar_t *third)
+PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *current_name, wchar_t *current_arr, wchar_t *current_dep)
 {
     PageResult result = {0};
 
-    //Contextos
-    DrawContext general_context =
-    {
-        .width = 100,
-        .height = 100
-    };
-    DrawContext first_text_context =
-    {
-        .width = 70,
-        .height = 100,
-        .element_in_focus = 1
-    };
-    DrawContext second_text_context =
-    {
-        .width = 70,
-        .height = 100
-    };
-    DrawContext third_text_context =
-    {
-        .width = 70,
-        .height = 100
-    };
-    DrawContext dialog_context =
-    {
-        .width = 70,
-        .height = 100
-    };
+    // --- Contextos (Iguais ao newstop) ---
+    DrawContext general_context = { .width = 100, .height = 100 };
+    DrawContext first_text_context = { .width = 70, .height = 100, .element_in_focus = 1 };
+    DrawContext second_text_context = { .width = 70, .height = 100 };
+    DrawContext third_text_context = { .width = 70, .height = 100 };
+    DrawContext dialog_context = { .width = 70, .height = 100 };
 
-    //Definição de estilo para os contextos
     set_style(args.style, &general_context);
     set_style(args.style, &first_text_context);
     set_style(args.style, &second_text_context);
     set_style(args.style, &third_text_context);
     set_style(args.style, &dialog_context);
 
-    //Vetores utilizados
-    wchar_t default_first_text[DBL] = L"Digite o nome da parada";
-    wchar_t default_second_text[DBL] = L"Horário de chegada";
-    wchar_t default_third_text[DBL] = L"Horário de saída";
-
-    wchar_t title_text[DBL];
-    swprintf(title_text, DBL, L"Editando a parada %ls", first);
-
+    // Variáveis de Texto
     wchar_t first_text[DBL] = L"\0";
-    wcscpy(first_text, first);
     wchar_t second_text[DBL] = L"\0";
-    wcscpy(second_text, second);
     wchar_t third_text[DBL] = L"\0";
-    wcscpy(third_text, third);
+    
+    // Título
+    wchar_t title_text[DBL] = L"Editar Parada";
 
+    // Teclas e Opções
     wchar_t *keys[] = {L"Esc", L"↑", L"←", L"→", L"↵"};
-    wchar_t *options[] = {L"Sair", L"Sobe", L"Esquerda" , L"Direita", L"Confirmar"};
-
-    //Tamanho dos vetores
+    wchar_t *options[] = {L"Cancelar", L"Sobe", L"Esq", L"Dir", L"Salvar"};
     int keys_length = sizeof(keys) / sizeof(keys[0]);
 
-    // Recuperando memória persistente
     Persistence *memory = NULL;
 
     if (*args.persistence)
     {
         memory = (Persistence*)*args.persistence;
 
-        if (!is_emptyw(memory->first_text))
-            wcscpy(first_text, memory->first_text);
-        if (!is_emptyw(memory->second_text))
-            wcscpy(second_text, memory->second_text);
-        if (!is_emptyw(memory->second_text))
-            wcscpy(third_text, memory->third_text);
+        wcscpy(first_text, memory->first_text);
+        wcscpy(second_text, memory->second_text);
+        wcscpy(third_text, memory->third_text);
 
-        if (memory->selected == 1)
-        {
+        if (memory->selected == 1) {
             first_text_context.element_in_focus = 0;
             second_text_context.element_in_focus = 1;
             third_text_context.element_in_focus = 0;
-        }
-        else if (memory->selected == 2)
-        {
+        } else if (memory->selected == 2) {
             first_text_context.element_in_focus = 0;
             second_text_context.element_in_focus = 0;
             third_text_context.element_in_focus = 1;
         }
     }
+    else
+    {
+        if (current_name) wcscpy(first_text, current_name);
+        if (current_arr)  wcscpy(second_text, current_arr);
+        if (current_dep)  wcscpy(third_text, current_dep);
+    }
 
-    // Para capitura teclas
+    // Variáveis de loop
     Key key = unknown;
     wint_t character;
-
-    // Variaveis para o loop
     int need_draw = 1;
     int need_split = 1;
     int running = 1;
@@ -121,7 +83,6 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
 
     while(running)
     {
-        // Tratamento de teclas
         switch (key)
         {
         case resize:
@@ -132,14 +93,12 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
 
         case esc:
             if (is_popup_on) break;
-
             result.action = page_action_back;
             running = 0;
             break;
 
         case enter:
-            if (is_popup_on)
-            {
+            if (is_popup_on) {
                 is_popup_on = 0;
                 need_draw = 1;
                 break;
@@ -153,7 +112,6 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
 
         case left:
             if (is_popup_on) break;
-
             first_text_context.element_in_focus = 0;
             second_text_context.element_in_focus = 1;
             third_text_context.element_in_focus = 0;
@@ -162,7 +120,6 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
 
         case right:
             if (is_popup_on) break;
-
             first_text_context.element_in_focus = 0;
             second_text_context.element_in_focus = 0;
             third_text_context.element_in_focus = 1;
@@ -171,7 +128,6 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
 
         case up:
             if (is_popup_on) break;
-
             first_text_context.element_in_focus = 1;
             second_text_context.element_in_focus = 0;
             third_text_context.element_in_focus = 0;
@@ -194,22 +150,19 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
                 remove_lastw(first_text);
             else if (second_text_context.element_in_focus)
                 remove_lastw(second_text);
-                else if (third_text_context.element_in_focus)
+            else if (third_text_context.element_in_focus)
                 remove_lastw(third_text);
             need_draw = 1;
             break;
-
-        default:
-            break;
+            
+        default: break;
         }
 
-        // Definição das coordenadas dos contextos
+        // Layout
         if (need_split)
         {
-            general_context.startx = 0;
-            general_context.starty = 0;
-            general_context.endx = COLS;
-            general_context.endy = LINES;
+            general_context.startx = 0; general_context.starty = 0;
+            general_context.endx = COLS; general_context.endy = LINES;
 
             DrawContext main_panel_context = general_context;
             DrawContext botton_panel_context;
@@ -218,12 +171,9 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
             main_panel_context.endy -= 5;
 
             split_context(&botton_panel_context, &main_panel_context, 50, SECOND, VERTICAL);
-
             split_context(&first_text_context, &main_panel_context, 50, FIRST, VERTICAL);
-
             split_context(&second_text_context, &botton_panel_context, 50, FIRST, HORIZONTAL);
             split_context(&third_text_context, &botton_panel_context, 50, SECOND, HORIZONTAL);
-
             split_context(&dialog_context, &main_panel_context, 100, FIRST, HORIZONTAL);
 
             need_split = 0;
@@ -232,67 +182,44 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *firs
         // Desenho
         if (need_draw)
         {
-            int sucessful = 1;
+            int ok = 1;
+            ok *= draw_base_page(title_text, &general_context);
+            ok *= draw_footer(keys, options, keys_length, &general_context);
 
-            sucessful *= draw_base_page(title_text, &general_context);
-            sucessful *= draw_footer(keys, options, keys_length, &general_context);
-
-            if (is_emptyw(first_text))
-                sucessful *= draw_text_box(default_first_text, &first_text_context);
-            else
-                sucessful *= draw_text_box(first_text, &first_text_context);
-
-            if (is_emptyw(second_text))
-                sucessful *= draw_text_box(default_second_text, &second_text_context);
-            else
-                sucessful *= draw_text_box(second_text, &second_text_context);
-
-            if (is_emptyw(third_text))
-                sucessful *= draw_text_box(default_third_text, &third_text_context);
-            else
-                sucessful *= draw_text_box(third_text, &third_text_context);
+            ok *= draw_text_box(first_text, &first_text_context);
+            ok *= draw_text_box(second_text, &second_text_context);
+            ok *= draw_text_box(third_text, &third_text_context);
 
             if (is_popup_on)
-                sucessful *= draw_message_dialog(error, &dialog_context);
+                ok *= draw_message_dialog(error, &dialog_context);
 
             need_draw = 0;
             refresh();
         }
 
-        // Capitura de tecla
-        if (running)
-        {
+        if (running) {
             int status = get_wch(&character);
             key = get_key(character, status);
         }
     }
 
-    // Se não tiver nada na memória, então a página cria uma nova
-    if (!memory)
-    {
+    // Salvar persistência
+    if (!memory) {
         memory = (Persistence*)malloc(sizeof(Persistence));
-
-        if (!memory)
-        {
+        if (!memory) {
             result.action = page_action_fail;
             return result;
         }
     }
 
-    // Salva o que é necessário na memória
-    if (first_text_context.element_in_focus)
-        memory->selected = 0;
-    else if (second_text_context.element_in_focus)
-        memory->selected = 1;
-    else
-        memory->selected = 2;
+    if (first_text_context.element_in_focus) memory->selected = 0;
+    else if (second_text_context.element_in_focus) memory->selected = 1;
+    else memory->selected = 2;
 
     wcscpy(memory->first_text, first_text);
     wcscpy(memory->second_text, second_text);
     wcscpy(memory->third_text, third_text);
 
-    // Modifica o ponteiro no handle
     *args.persistence = memory;
-
     return result;
 }

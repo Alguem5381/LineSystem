@@ -3,7 +3,8 @@
 
 #include <states.h>
 #include <style.h>
+#include <object.h>
 
-HandleResult init_line_handle(Style const *style);
+HandleResult init_line_handle(Style const *style, Object *data);
 
 #endif //LINE_HANDLE_H

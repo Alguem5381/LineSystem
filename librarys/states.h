@@ -18,9 +18,9 @@ typedef enum States
 
 typedef struct HandleResult
 {
-    wchar_t *first_value;
-    wchar_t *second_value;
-    wchar_t *third_value;
+    void *first_value;
+    void *second_value;
+    void *third_value;
     States state;
 } HandleResult;
 

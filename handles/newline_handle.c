@@ -5,7 +5,7 @@
 
 #define DBL 256
 
-HandleResult init_newline_handle(Style const *style)
+HandleResult init_newline_handle(Style const *style, Object *data)
 {
     void *persistence = NULL;
 
@@ -48,10 +48,10 @@ HandleResult init_newline_handle(Style const *style)
         //Caso seja um texto
         case page_action_text:
             //Tenta criar, se falhar colocar o texto de error em error e ativa um popup
-            if (is_emptyw(result.first_text) || is_emptyw(result.second_text) || 1/*func aqui*/ )
+            if (is_emptyw(result.first_text) || is_emptyw(result.second_text) || !insertBusLine(data, result.first_text, result.second_text))
             {
                 args.throw_popup = 1;
-                wcscpy(error, L"Falha ao criar");
+                wcscpy(error, L"Falha ao criar, valores inválidos ou linha já existente");
                 break;
             }
 
@@ -59,19 +59,6 @@ HandleResult init_newline_handle(Style const *style)
             wcscpy(error, L"Criado com sucesso");
             free(persistence);
             persistence = NULL;
-            break;
-
-        //Caso seja um texto e um índice
-        case page_action_text_and_selected:
-            //Faz algo
-            break;
-
-        case page_action_select:
-            //Faz algo
-            break;
-
-        case page_action_fail:
-            //Faz algo
             break;
 
         default:

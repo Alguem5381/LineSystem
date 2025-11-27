@@ -3,7 +3,8 @@
 
 #include <states.h>
 #include <style.h>
+#include <object.h>
 
-HandleResult init_search_handle(Style const *style);
+HandleResult init_search_handle(Style const *style, Object *data);
 
 #endif //SEARCH_HANDLE_H

@@ -38,16 +38,18 @@ int saveObject(Object *object);
 
 int deleteObject(Object *object);
 int deleteLine(DoubleLinkedList *dl);
-int removeByName(Object *obj, wchar_t *name);
 int insertBusStop(Object *obj, wchar_t *line_number, wchar_t *name, Hours departure_time, Hours arrival_time);
 int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise);
 int hasBusLine(Object *obj, wchar_t *name);
-int removeStop(Object *obj, BusStop *stop);
+int insertStopAfter(BusLine *line, DoubleLinkedListNode *prev_node, BusStop *new_data);
+int removeStopNode(BusLine *line, DoubleLinkedListNode *target_node);
+int removeLineNode(Object *obj, SimpleLinkedListNode *target_node);
 
 int get_stops_to_array(SimpleLinkedListNode *list_to_search, DoubleLinkedListNode ***array_out, int *array_length, wchar_t *search_term);
 int get_all_stops_to_array(Object *obj, DoubleLinkedListNode ***array_out, int *array_length, wchar_t *search_term);
 int get_lines_to_array(Object *obj, SimpleLinkedListNode ***array_out, int *array_length, wchar_t *search_term);
+wchar_t **create_stop_strings(DoubleLinkedListNode **node_array, int length);
+wchar_t **create_line_strings(SimpleLinkedListNode **node_array, int length);
 RouteResult find_best_route(Object *obj, wchar_t *origin_name, wchar_t *dest_name, Hours target_arrival);
-
 
 #endif

@@ -3,7 +3,8 @@
 
 #include <states.h>
 #include <style.h>
+#include <object.h>
 
-HandleResult init_newstop_handle(Style const *style, wchar_t *line, wchar_t *current);
+HandleResult init_newstop_handle(Style const *style, SimpleLinkedListNode *line_node, DoubleLinkedListNode *prev_node);
 
 #endif //NEWSTOP_HANDLE_H

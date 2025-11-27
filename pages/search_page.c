@@ -143,6 +143,7 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
 
         case right:
             if (is_popup_on) break;
+            if (state == 0) break; 
 
             search_bar_context.element_in_focus = 0;
             time_bar_context.element_in_focus = 1;
@@ -185,15 +186,21 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             break;
 
         case enter:
-            if (is_popup_on)
-            {
+            if (is_popup_on) {
                 is_popup_on = 0;
                 need_draw = 1;
                 break;
             }
+            
+            if (state == 2) {
+                result.action = page_action_back;
+                running = 0;
+                break;
+            }
 
-            if (is_emptyw(time_text))
+            if (state == 1 && is_emptyw(time_text))
             {
+                wcscpy(dialog_text, L"Digite o horário de chegada!");
                 is_popup_on = 1;
                 need_draw = 1;
                 need_split = 1;
@@ -204,7 +211,6 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             wcscpy(result.first_text, time_text);
             result.selected_index = list_context.element_in_focus;
             running = 0;
-
             break;
 
         case common:
@@ -290,10 +296,12 @@ PageResult init_search_page(Style const *style, void **persistence, int state, i
             else
                 sucessful *= draw_text_box(default_search_text, &search_bar_context);
 
-            if (!is_emptyw(time_text))
-                sucessful *= draw_text_box(time_text, &time_bar_context);
-            else
-                sucessful *= draw_text_box(default_time_text, &time_bar_context);
+            if (state != 0) {
+                if (!is_emptyw(time_text))
+                    sucessful *= draw_text_box(time_text, &time_bar_context);
+                else
+                    sucessful *= draw_text_box(default_time_text, &time_bar_context);
+            }
 
             if (is_popup_on)
                 sucessful *= draw_message_dialog(dialog_text, &dialog_context);

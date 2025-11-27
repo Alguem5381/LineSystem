@@ -2,163 +2,169 @@
 #include <search_page.h>
 #include <stdlib.h>
 #include <hours.h>
+#include <letter.h>
 
 #define DBL 256
 #define TIME_DBL 7
 
-int free_elements(wchar_t *elements[], int elements_length)
+HandleResult init_search_handle(Style const *style, Object *data)
 {
-    for (int index = 0; index < elements_length; index++)
-        free(elements[index]);
-}
-
-HandleResult init_search_handle(Style const *style)
-{
-    void *persistence[] = {NULL, NULL};
+    // Ponteiro para a memoria persistente
+    void *persistence[3] = {NULL, NULL, NULL};
     int current_persistence = 0;
 
-    //Estado da página
     int page_state = 0;
     int throw_popup = 0;
 
-    //Vetores que serão usados
     wchar_t first_stop[DBL] = {0};
-    wchar_t second_stop[DBL] = {0};
-    wchar_t first_time[TIME_DBL] = {0};
-    wchar_t second_time[TIME_DBL] = {0};
-
-    wchar_t *infomations = NULL;
-
-    wchar_t **elements = NULL;
-
-    //Tamanho do vetor
+    
+    // Texto informativo para a tela de resultados
+    wchar_t infomations[DBL] = {0};
+    
+    // Arrays dinâmicos
+    wchar_t **strings = NULL;
+    DoubleLinkedListNode **elements = NULL;
     int elements_length = 0;
 
-    //Loop principal
+    // Passa NULL no filtro para pegar tudo
+    if (!get_all_stops_to_array(data, &elements, &elements_length, NULL)) {
+        elements_length = 0;
+    }
+    strings = create_stop_strings(elements, elements_length);
+
     int running = 1;
-    HandleResult handle_result = 
-    {
-        .state = state_main,
-        .first_value = NULL
-    };
+    HandleResult handle_result = { .state = state_main };
 
     while(running)
     {
-        PageResult result = init_search_page(style, &persistence[current_persistence], page_state, throw_popup, infomations, elements, elements_length);
+        PageResult result = init_search_page(
+            style, 
+            &persistence[current_persistence], 
+            page_state, 
+            throw_popup, 
+            infomations, 
+            strings, 
+            elements_length
+        );
+        
         throw_popup = 0;
 
-        //Manipulação do resultado da página
         switch (result.action)
         {
-        //Caso seja uma ação de voltar
         case page_action_back:
-            switch (page_state)
-            {
-            case 0:
-                //Apaga a lista de elementos
-                // free_elements(elements, elements_length);
-
-                //E finaliza
+            if (page_state == 0) {
                 running = 0;
                 handle_result.state = state_main;
-                break;
-
-            case 1:
-                //Atualiza para o primeiro estado
-                page_state--;
+            } 
+            else if (page_state == 1) {
+                // Voltar do destino para a origem
+                
+                // Limpa persistência do estado atual Destino pois foi abandonado
+                free(persistence[current_persistence]);
+                persistence[current_persistence] = NULL;
+                
                 current_persistence--;
-
-                //Apaga a lista anterior
-                // free_elements(elements, elements_length);
-
-                //Busca a parada anterior com o nome exato
-                //search_str(&elements, &elements_length, first_stop);
-                break;
-
-            case 2:
                 page_state--;
-                free(infomations);
-                infomations = NULL;
-                break;
-            
-            default:
-                break;
+
+                // Recarrega a lista completa sem filtro para a seleção da origem
+                free(elements);
+                free_string_array(strings, elements_length);
+                get_all_stops_to_array(data, &elements, &elements_length, NULL);
+                strings = create_stop_strings(elements, elements_length);
+            }
+            else if (page_state == 2) {
+                // Voltar do resultado para destino
+                free(persistence[current_persistence]);
+                persistence[current_persistence] = NULL;
+
+                current_persistence--;
+                page_state--;
+                
+                // Limpa informações de resultado
+                infomations[0] = L'\0';
+
+                free(elements);
+                free_string_array(strings, elements_length);
+                get_all_stops_to_array(data, &elements, &elements_length, NULL);
+                strings = create_stop_strings(elements, elements_length);
             }
             break;
 
-        //Caso seja um texto
         case page_action_text:
-            switch (page_state)
+            // O usuário digitou algo na busca
+            if (page_state == 0 || page_state == 1)
             {
-            case 0:
-            case 1:
-                //Apago a lista antiga
-                // free_elements(elements, elements_length);
+                free(elements);
+                elements = NULL;
+                free_string_array(strings, elements_length);
 
-                //Busco uma nova com o novo texto do resultado
-                //search_str(&elements, &elements_length, result.text);
-                break;
-            
-            default:
-                break;
+                // Busca filtrada
+                get_all_stops_to_array(data, &elements, &elements_length, result.first_text);
+                
+                // Cria novas strings
+                strings = create_stop_strings(elements, elements_length);
             }
             break;
 
-        //Caso seja um texto e um índice
         case page_action_text_and_selected:
-            switch (page_state)
+            if (page_state == 0) // Origem Selecionada
             {
-            case 0:
-                //Válida o horário
-                if (!is_valid_format(result.first_text))
-                {
-                    throw_popup = 1;
-                    break;
-                }
+                // Verifica índice válido
+                if (result.selected_index < 0 || result.selected_index >= elements_length) break;
 
-                //Atualiza os estados para o segundo nível
+                // Salva o nome da parada de origem
+                // elements é DoubleLinkedListNode**, info é BusStop*
+                BusStop *stop = (BusStop*)elements[result.selected_index]->info;
+                wcscpy(first_stop, stop->nome);
+
+                // Avança estado
                 page_state++;
                 current_persistence++;
 
-                //Salva a primeira parada e horário
-                wcscpy(first_stop, elements[result.selected_index]);
-                wcscpy(first_time, result.first_text);
-
-                //Libera a lista antiga
-                // free_elements(elements, elements_length);
-                elements = NULL;
-
-                //Apaga um possível persistance anteriormente usado
-                free(persistence[current_persistence]);
-                persistence[current_persistence] = NULL;
-                break;
-
-            case 1:
-                //Atualiza o estado para o terceiro nível
-                page_state++;
-
-                //Sem break porque aqui quando ele transiciona entre o estado 1 e 2,
-                //ele faz a mesma coisas com a diferença da mudança do estado
-            case 2:
-                //Válida o horário
+                free(elements);
+                free_string_array(strings, elements_length);
+                
+                get_all_stops_to_array(data, &elements, &elements_length, NULL);
+                strings = create_stop_strings(elements, elements_length);
+            }
+            else if (page_state == 1) // Destino Selecionado
+            {
+                // Valida horário
                 if (!is_valid_format(result.first_text))
                 {
                     throw_popup = 1;
                     break;
                 }
 
-                //Salva a segunda parada
-                wcscpy(second_stop, elements[result.selected_index]);
-                wcscpy(second_time, result.first_text);
+                if (result.selected_index < 0 || result.selected_index >= elements_length) break;
 
-                //Faz a busca
-                //infomation = search_route(fist_stop, second_stop, first_time, second_time);
-                break;
+                BusStop *stop_dest = (BusStop*)elements[result.selected_index]->info;
 
-            default:
-                break;
+                // Prepara busca de rota
+                Hours arrival;
+                string_to_time(result.first_text, &arrival);
+                
+                RouteResult routeResult = find_best_route(data, first_stop, stop_dest->nome, arrival);
+
+                // Formata Resultado
+                if (routeResult.found) {
+                    swprintf(infomations, DBL, 
+                        L"Linha: %ls\nEmpresa: %ls\n\nOrigem: %ls\nDestino: %ls\n\nSaída: %02dh%02dm\nChegada: %02dh%02dm", 
+                        routeResult.line_name, 
+                        routeResult.enterprise, 
+                        routeResult.origin_name,
+                        routeResult.dest_name,
+                        routeResult.departure.hours, routeResult.departure.minutes,
+                        routeResult.arrival.hours, routeResult.arrival.minutes
+                    );
+                } else {
+                    swprintf(infomations, DBL, L"Nenhuma rota encontrada para este horário/trajeto.");
+                }
+
+                // Avança para tela de resultado
+                page_state++;
+                current_persistence++;
             }
-
             break;
 
         default:
@@ -166,8 +172,13 @@ HandleResult init_search_handle(Style const *style)
         }
     }
 
-    for(int i = 0; i < 3; i++)
-        free(persistence[i]);
+    // Limpeza Final
+    for(int i = 0; i < 3; i++) {
+        if(persistence[i]) free(persistence[i]);
+    }
+
+    free_string_array(strings, elements_length);
+    free(elements); // Free no array de ponteiros
 
     return handle_result;
 }

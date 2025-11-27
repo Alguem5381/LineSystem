@@ -3,7 +3,8 @@
 
 #include <states.h>
 #include <style.h>
+#include <object.h>
 
-HandleResult init_editstop_handle(Style const *style, wchar_t *line, wchar_t *stop);
+HandleResult init_editstop_handle(Style const *style, DoubleLinkedListNode *target_node, SimpleLinkedListNode *line_node);
 
 #endif //EDITSTOP_HANDLE_H
