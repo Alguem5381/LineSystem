@@ -18,3 +18,6 @@ O programa funciona como uma maquina de estado. O programa é dividido em 4 part
 Primeiro é necessário baixar a biblioteca ncurses.
 ### Para compilar:
 Abra a pasta do projeto onde o manager.c está e execute o seguinte comando:
+```bash
+gcc *.c DoubleList/*.c librarys/*.c pages/*.c handles/*.c -g -I./librarys/ -I./pages/ -I./handles/ -I./DoubleList/ -lncursesw -o ./.out/LineSystem
+```
