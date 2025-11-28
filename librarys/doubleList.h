@@ -7,8 +7,7 @@
 /**
  * @defgroup DoubleLinkedList
  * @brief Lista Duplamente Encadeada Circular.
- * @warning Para utilizar, deve declarar os dados de DataType e a funcao comp,
- * que sera usada para comparar os DataTypes.
+ * @warning Para utilizar, deve declarar os dados de DataType
  *
  */
 

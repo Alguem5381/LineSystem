@@ -10,6 +10,10 @@
 #include <letter.h>
 #include <keys.h>
 
+/*Todas as páginas seguem essa mesma estrutura,
+ *algumas podem ter algumas diferenças mas nada que saia
+ *desse padrão. A ideia é manter a organizaçãos*/
+
 // (D)Default (B)Buffer (L) Length
 #define DBL 256
 
@@ -18,8 +22,6 @@ typedef struct Persistence
 {
     int some_value;
 } Persistence;
-
-// Inicializador da página
 
 PageResult init_template_page(PageArgs args)
 {

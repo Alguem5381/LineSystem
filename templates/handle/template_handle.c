@@ -5,7 +5,9 @@
 #include <template_handle.h>
 #include <template_page.h>
 
-States init_template_handle(Style const *style)
+//Todas os manipuladores também seguem essa mesma estrutura.
+
+HandleResult init_template_handle(Style const *style)
 {
     void *persistence = NULL;
 
@@ -23,12 +25,12 @@ States init_template_handle(Style const *style)
 
     //Loop principal
     int running = 1;
-    States state;
+    HandleResult handle_result;
 
     while(running)
     {
         PageResult result = init_template_page(args);
-        throw_popup = 0;
+        args.throw_popup = 0;
 
         //Manipulação do resultado da página
         switch (result.action)
@@ -63,5 +65,5 @@ States init_template_handle(Style const *style)
 
     free(persistence);
 
-    return state;
+    return handle_result;
 }

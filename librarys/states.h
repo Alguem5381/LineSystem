@@ -7,6 +7,7 @@
 
 #include <wchar.h>
 
+/// @brief Enumerador de estados possíveis de handles
 typedef enum States
 {
     state_exit,
@@ -20,6 +21,7 @@ typedef enum States
     state_edit_stop
 } States;
 
+/// @brief Estrutura detorno de todos os handles
 typedef struct HandleResult
 {
     void *first_value;

@@ -31,7 +31,6 @@ HandleResult init_editstop_handle(Style const *style, DoubleLinkedListNode *targ
     swprintf(init_departure, DBL, L"%02dh%02dm", current_stop->departure_time.hours, current_stop->departure_time.minutes);
 
     int page_state = 0;
-    int throw_popup = 0;
 
     PageArgs args = {
         .style = style,
@@ -51,7 +50,7 @@ HandleResult init_editstop_handle(Style const *style, DoubleLinkedListNode *targ
     while(running)
     {
         // Passamos os valores ATUAIS para servirem de padrão caso a persistência esteja vazia
-        PageResult result = init_editstop_page(args, error, current_stop->nome, init_arrival, init_departure);
+        PageResult result = init_editstop_page(args, error, current_stop->name, init_arrival, init_departure);
 
         args.throw_popup = 0; 
         error[0] = L'\0';
@@ -79,7 +78,7 @@ HandleResult init_editstop_handle(Style const *style, DoubleLinkedListNode *targ
                 break;
             }
 
-            wcscpy(current_stop->nome, result.first_text);
+            wcscpy(current_stop->name, result.first_text);
             current_stop->arrival_time = new_arrival;
             current_stop->departure_time = new_departure;
 

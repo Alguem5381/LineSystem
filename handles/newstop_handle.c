@@ -39,7 +39,7 @@ HandleResult init_newstop_handle(Style const *style, SimpleLinkedListNode *line_
         
         if (prev_node && prev_node->info) {
             BusStop *prev_stop = (BusStop*)prev_node->info;
-            swprintf(title_buffer, DBL, L"Adicionar após: %ls", prev_stop->nome);
+            swprintf(title_buffer, DBL, L"Adicionar após: %ls", prev_stop->name);
         } else 
             swprintf(title_buffer, DBL, L"Adicionar Primeira Parada");
 
@@ -60,15 +60,15 @@ HandleResult init_newstop_handle(Style const *style, SimpleLinkedListNode *line_
             Hours arrival;
             Hours departure;
 
-            if (is_emptyw(result.first_text) || 
-                is_emptyw(result.second_text) || 
-                is_emptyw(result.third_text) ||
+            if (is_emptyw(result.first_text) || wcslen(result.first_text) > 20 ||
+                is_emptyw(result.second_text) || wcslen(result.second_text) > 20 ||
+                is_emptyw(result.third_text) || wcslen(result.third_text) > 20 ||
                 !string_to_time(result.second_text, &arrival) ||   // Chegada
                 !string_to_time(result.third_text, &departure)     // Saída
             )
             {
                 args.throw_popup = 1;
-                wcscpy(error, L"Dados inválidos! Use HHhMMm");
+                wcscpy(error, L"Dados inválidos! Use HHhMMm ou nome o é grande demais");
                 break;
             }
 
@@ -81,7 +81,7 @@ HandleResult init_newstop_handle(Style const *style, SimpleLinkedListNode *line_
             }
 
             // Preenche a struct
-            wcscpy(new_stop->nome, result.first_text);
+            wcscpy(new_stop->name, result.first_text);
             new_stop->arrival_time = arrival;
             new_stop->departure_time = departure;
 

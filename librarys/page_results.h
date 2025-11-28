@@ -10,6 +10,7 @@
 
 #define DBL 256
 
+/// @brief Enumerador para ações que uma página pode retornar
 typedef enum PageAction
 {
     page_action_fail,
@@ -19,6 +20,7 @@ typedef enum PageAction
     page_action_text_and_selected
 } PageAction;
 
+/// @brief Estrutura para retornar os resultados de uma página
 typedef struct PageResult
 {
     PageAction action;
@@ -28,6 +30,7 @@ typedef struct PageResult
     wchar_t third_text[DBL];
 } PageResult;
 
+/// @brief Argumentos necessários para uma página
 typedef struct PageArgs 
 {
     const Style *style;

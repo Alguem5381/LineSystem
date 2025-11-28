@@ -9,13 +9,12 @@
 
 #define DBL 256
 
-HandleResult init_newline_handle(Style const *style, Object *data)
+HandleResult init_newline_handle(Style const *style, Data *data)
 {
     void *persistence = NULL;
 
     //Estado da página
     int page_state = 0;
-    int throw_popup = 0;
 
     PageArgs args =
     {
@@ -38,7 +37,7 @@ HandleResult init_newline_handle(Style const *style, Object *data)
     while(running)
     {
         PageResult result = init_newline_page(args, error);
-        throw_popup = 0;
+        args.throw_popup = 0;
 
         //Manipulação do resultado da página
         switch (result.action)

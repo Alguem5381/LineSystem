@@ -10,7 +10,7 @@
 
 #define DBL 256
 
-HandleResult init_line_handle(Style const *style, Object *data)
+HandleResult init_line_handle(Style const *style, Data *data)
 {
     void *persistence = NULL;
 

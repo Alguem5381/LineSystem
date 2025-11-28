@@ -14,14 +14,14 @@
 #include <object.h>
 
 // Funções do fileMenager
-int loadFromFile(Object *object);
-int saveToFile(Object *object);
+int loadFromFile(Data *object);
+int saveToFile(Data *object);
 
 int open_line_file(FILE **file);
-int get_lines_from_file(Object *object, FILE *file);
+int get_lines_from_file(Data *object, FILE *file);
 int openLine(wchar_t *str, BusLine *line);
 int saveStops(DoubleLinkedList *dl, char *path);
 int removeLine(wchar_t *path);
-int saveLine(Object *obj);
+int saveLine(Data *obj);
 
 #endif

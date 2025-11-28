@@ -9,6 +9,6 @@
 #include <style.h>
 #include <object.h>
 
-HandleResult init_newline_handle(Style const *style, Object *data);
+HandleResult init_newline_handle(Style const *style, Data *data);
 
 #endif //NEWLINE_HANDLE_H

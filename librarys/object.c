@@ -4,55 +4,55 @@
 */
 #include "object.h"
 #include "fileMenager.h"
-#include <wchar.h>   // Necessário para wcscpy, wcscmp
-#include <stdlib.h>  // Necessário para malloc, free
+#include <wchar.h>
+#include <stdlib.h>
 #include <letter.h>
 #include <math.h>
 
 // Função de definição e destruição
-int defineObject(Object *object)
+int defineObject(Data *data)
 {
-    if (!object) return 0;
+    if (!data) return 0;
 
     SimpleLinkedList *LL = malloc(sizeof(SimpleLinkedList));
     if (!LL) return 0;
 
     define_sll(LL);
-    object->SLL = LL;
+    data->SLL = LL;
 
     return 1;
 }
 
-int deleteObject(Object *obj){
-    if (!obj || !obj->SLL) return 0;
+int deleteObject(Data *data){
+    if (!data || !data->SLL) return 0;
 
-    SimpleLinkedListNode *curr = obj->SLL->head;
+    SimpleLinkedListNode *curr = data->SLL->head;
 
     while (curr)
     {
         BusLine *DL = ((BusLine*)curr->info);
         curr = curr->next;
     }
-    destroy_sll(obj->SLL);
+    destroy_sll(data->SLL);
 
     return 1;
 }
 
 // Função de carregamento e descarregamento
-int loadData(Object *object) {
-    if (!object) return 0;
-    return loadFromFile(object);  
+int loadData(Data *data) {
+    if (!data) return 0;
+    return loadFromFile(data);  
 }
 
-int saveObject(Object *object) {
+int saveObject(Data *object) {
     if (!object || !object->SLL) return 0;
     return saveToFile(object); 
 }
 
 // Argumentos char mudaram para wchar_t
-int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise)
+int insertBusLine(Data *data, wchar_t *name, wchar_t *enterprise)
 {
-    if (hasBusLine(obj, name))
+    if (hasBusLine(data, name) || wcslen(name) > 20 || wcslen(enterprise) > 20)
         return 0;
 
     BusLine *line = malloc(sizeof(BusLine));
@@ -70,7 +70,6 @@ int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise)
 
     create(double_linked_list);
 
-    // wcscpy substitui strcpy
     wcscpy(line->enterprise, enterprise);
     wcscpy(line->name, name);
 
@@ -79,7 +78,7 @@ int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise)
 
     line->list = double_linked_list;
 
-    if(!init_insert_sll(obj->SLL, line))
+    if(!init_insert_sll(data->SLL, line))
     {
         free(double_linked_list);
         free(line);
@@ -89,12 +88,10 @@ int insertBusLine(Object *obj, wchar_t *name, wchar_t *enterprise)
     return 1;
 }
 
-// Argumento char mudou para wchar_t
-int hasBusLine(Object *obj, wchar_t *name){
-    SimpleLinkedListNode *curr = obj->SLL->head;
+int hasBusLine(Data *data, wchar_t *name){
+    SimpleLinkedListNode *curr = data->SLL->head;
     while (curr)
     {
-        // Comparação wide
         if (!wcscmp((((BusLine*)(curr->info))->name), name))
             return 1;
         curr = curr->next;
@@ -102,16 +99,16 @@ int hasBusLine(Object *obj, wchar_t *name){
     return 0;
 }
 
-RouteResult find_best_route(Object *obj, wchar_t *origin_name, wchar_t *dest_name, Hours target_arrival) {
+RouteResult find_best_route(Data *data, wchar_t *origin_name, wchar_t *dest_name, Hours target_arrival) {
     RouteResult best_route;
     best_route.found = 0;
     
     int target_min = to_minutes(target_arrival);
     int min_diff = 100000; // Valor alto inicial
 
-    if (!obj || !obj->SLL) return best_route;
+    if (!data || !data->SLL) return best_route;
 
-    SimpleLinkedListNode *line_node = obj->SLL->head;
+    SimpleLinkedListNode *line_node = data->SLL->head;
 
     // Percorre as Linhas
     while (line_node) {
@@ -128,7 +125,7 @@ RouteResult find_best_route(Object *obj, wchar_t *origin_name, wchar_t *dest_nam
                 BusStop *stop_dest = (BusStop*)dest_node->info;
 
                 // Encontra um possível destino
-                if (wcscmp(stop_dest->nome, dest_name) == 0) 
+                if (wcscmp(stop_dest->name, dest_name) == 0) 
                 {
                     // Calcula a diferença de tempo para saber se vale a pena investigar
                     int arrival_min = to_minutes(stop_dest->arrival_time);
@@ -149,7 +146,7 @@ RouteResult find_best_route(Object *obj, wchar_t *origin_name, wchar_t *dest_nam
                             BusStop *stop_origin = (BusStop*)curr_back->info;
 
                             // Achou uma origem
-                            if (wcscmp(stop_origin->nome, origin_name) == 0) 
+                            if (wcscmp(stop_origin->name, origin_name) == 0) 
                             {
                                 // O ônibus precisa passar na origem antes do destino
                                 int departure_min = to_minutes(stop_origin->departure_time);
@@ -190,9 +187,9 @@ RouteResult find_best_route(Object *obj, wchar_t *origin_name, wchar_t *dest_nam
 }
 
 //Busca os nós das linhas
-int get_lines_to_array(Object *obj, SimpleLinkedListNode ***array_out, int *array_length, wchar_t *search_term)
+int get_lines_to_array(Data *data, SimpleLinkedListNode ***array_out, int *array_length, wchar_t *search_term)
 {
-    if (!obj || !array_out || !array_length)
+    if (!data || !array_out || !array_length)
         return 0;
 
     int capacity = 2;
@@ -206,7 +203,7 @@ int get_lines_to_array(Object *obj, SimpleLinkedListNode ***array_out, int *arra
         return 0;
     }
 
-    SimpleLinkedListNode *node = obj->SLL->head;
+    SimpleLinkedListNode *node = data->SLL->head;
 
     while (node)
     {
@@ -250,9 +247,9 @@ int get_lines_to_array(Object *obj, SimpleLinkedListNode ***array_out, int *arra
     return 1; // Sucesso
 }
 
-int get_all_stops_to_array(Object *obj, DoubleLinkedListNode ***array_out, int *array_length, wchar_t *search_term)
+int get_all_stops_to_array(Data *data, DoubleLinkedListNode ***array_out, int *array_length, wchar_t *search_term)
 {
-    if (!obj || !obj->SLL || !array_out || !array_length)
+    if (!data || !data->SLL || !array_out || !array_length)
         return 0;
 
     int capacity = 16; // Começa maior por causa da quantidade
@@ -266,7 +263,7 @@ int get_all_stops_to_array(Object *obj, DoubleLinkedListNode ***array_out, int *
         return 0;
     }
 
-    SimpleLinkedListNode *line_node = obj->SLL->head;
+    SimpleLinkedListNode *line_node = data->SLL->head;
 
     while (line_node)
     {
@@ -284,9 +281,9 @@ int get_all_stops_to_array(Object *obj, DoubleLinkedListNode ***array_out, int *
                 BusStop *stop = (BusStop*)stop_node->info;
                 int match = 1;
 
-                // Verificação do Filtro (Search Term)
+                // Verificação do Filtro
                 if (search_term && wcslen(search_term) > 0) {
-                    if (!contains_wstr(search_term, stop->nome)) 
+                    if (!contains_wstr(search_term, stop->name)) 
                         match = 0;
                 }
 
@@ -358,7 +355,7 @@ int get_stops_to_array(SimpleLinkedListNode *list_to_search, DoubleLinkedListNod
 
         // Se o filtro for NULL ou vazio, pega tudo. Se não, verifica.
         if (search_term && wcslen(search_term) > 0) {
-            if (!contains_wstr(search_term, stop->nome))
+            if (!contains_wstr(search_term, stop->name))
             {
                 node = node->next;
                 continue;
@@ -378,7 +375,7 @@ int get_stops_to_array(SimpleLinkedListNode *list_to_search, DoubleLinkedListNod
                 free(*array_out); // Libera o antigo para não vazar
                 *array_out = NULL;
                 *array_length = 0;
-                return 0;   //Falha
+                return 0;
             }
             *array_out = temp;
         }
@@ -425,12 +422,12 @@ void clear_stops_list(DoubleLinkedList *dl)
 }
 
 // Remove um nó específico da lista de Linhas
-int removeLineNode(Object *obj, SimpleLinkedListNode *target_node)
+int removeLineNode(Data *data, SimpleLinkedListNode *target_node)
 {
-    if (!obj || !obj->SLL || !obj->SLL->head || !target_node) 
+    if (!data || !data->SLL || !data->SLL->head || !target_node) 
         return 0;
 
-    SimpleLinkedListNode *curr = obj->SLL->head;
+    SimpleLinkedListNode *curr = data->SLL->head;
     SimpleLinkedListNode *prev = NULL;
 
     while (curr) 
@@ -452,7 +449,7 @@ int removeLineNode(Object *obj, SimpleLinkedListNode *target_node)
             }
 
             if (prev == NULL) 
-                obj->SLL->head = curr->next;
+                data->SLL->head = curr->next;
             else 
                 prev->next = curr->next;
 
@@ -471,22 +468,26 @@ wchar_t **create_stop_strings(DoubleLinkedListNode **node_array, int length)
 {
     if (!node_array || length <= 0) return NULL;
 
+    // Aloca o vetor de string
     wchar_t **string_array = malloc(length * sizeof(wchar_t*));
     if (!string_array) return NULL;
 
+    // Itera o vetor de nós
     for (int i = 0; i < length; i++)
     {
         BusStop *stop = (BusStop*)node_array[i]->info;
 
+        // Aloca a string
         int buffer_size = 128;
         string_array[i] = malloc(buffer_size * sizeof(wchar_t));
 
         if (!string_array[i]) 
             return NULL; 
 
+        // Coloca os dados
         swprintf(string_array[i], buffer_size, 
             L"%-20ls Saída: %02dh%02dm | Chegada: %02dh%02dm", 
-            stop->nome, 
+            stop->name, 
             stop->departure_time.hours, stop->departure_time.minutes,
             stop->arrival_time.hours, stop->arrival_time.minutes
         );
@@ -499,25 +500,30 @@ wchar_t **create_line_strings(SimpleLinkedListNode **node_array, int length)
 {
     if (!node_array || length <= 0) return NULL;
 
+    //Aloca o vetor de string
     wchar_t **string_array = malloc(length * sizeof(wchar_t*));
     if (!string_array) return NULL;
 
+    // Itera os nós
     for (int i = 0; i < length; i++)
     {
         BusLine *line = (BusLine*)node_array[i]->info;
-        
+
+        //Aloca a sring
         int buffer_size = 128;
         string_array[i] = malloc(buffer_size * sizeof(wchar_t));
 
         if (!string_array[i]) 
             return NULL;
 
+        //Verifica o estado
         wchar_t *status_text;
         if (line->list == NULL || line->list->head == NULL || line->list->size < 1) 
-            status_text = L"(Em Aberto)"; // Sem paradas cadastradas ou com uma única parada
+            status_text = L"(Em Aberto)"; // Sem paradas cadastradas
         else 
             status_text = L"(Ativa)";
 
+        // Coloca os dados
         swprintf(string_array[i], buffer_size, 
             L"%-20ls | %-20ls | %ls", 
             line->name, 
@@ -537,6 +543,7 @@ int removeStopNode(BusLine *line, DoubleLinkedListNode *target_node)
 
     DoubleLinkedList *dl = line->list;
 
+    // Se for o único nó
     if (target_node->next == target_node) 
     {
         dl->head = NULL;
@@ -544,18 +551,22 @@ int removeStopNode(BusLine *line, DoubleLinkedListNode *target_node)
     } 
     else 
     {
+        // Remove o nó da lista
         target_node->prev->next = target_node->next;
         target_node->next->prev = target_node->prev;
 
+        // Caso seja a cabeça então move para um nó válido
         if (dl->head == target_node) 
             dl->head = target_node->next;
 
         dl->size--;
     }
 
+    // Desaloca a parada
     if (target_node->info) 
         free(target_node->info);
 
+    // Desaloca o nó
     free(target_node);
 
     return 1;
@@ -568,13 +579,17 @@ int insertStopAfter(BusLine *line, DoubleLinkedListNode *prev_node, BusStop *new
     // Validações
     if (!line || !line->list || !new_data) return 0;
 
+    //Aloca o nó
     DoubleLinkedListNode *new_node = malloc(sizeof(DoubleLinkedListNode));
     if (!new_node) return 0;
 
+    //Entraga os dados
     new_node->info = new_data;
 
+    //Pego a lista
     DoubleLinkedList *dl = line->list;
 
+    //Se ela estiver vazia, então esse era o primeiro nó
     if (dl->head == NULL) 
     {
         new_node->next = new_node;
@@ -582,7 +597,7 @@ int insertStopAfter(BusLine *line, DoubleLinkedListNode *prev_node, BusStop *new
 
         dl->head = new_node;
     }
-    else if (prev_node != NULL) 
+    else if (prev_node != NULL) //Se ela não estiver vazia
     {
         new_node->prev = prev_node;
         new_node->next = prev_node->next;
@@ -606,7 +621,7 @@ int compare_wide_strings(const void *a, const void *b)
 }
 
 // Retorna um array de strings unicas
-wchar_t **create_unique_names_list(Object *data, int *out_length, wchar_t *search_term)
+wchar_t **create_unique_names_list(Data *data, int *out_length, wchar_t *search_term)
 {
     int capacity = 0;
     
@@ -647,10 +662,10 @@ wchar_t **create_unique_names_list(Object *data, int *out_length, wchar_t *searc
                     // Aplica o filtro de texto se ele existir
                     int match = 1;
                     if (search_term && wcslen(search_term) > 0)
-                         if (!wcsstr(stop->nome, search_term)) match = 0; // Se não contem, ignora
+                         if (!wcsstr(stop->name, search_term)) match = 0; // Se não contem, ignora
 
                     if (match) 
-                        temp_names[count++] = stop->nome; // Guarda só o ponteiro
+                        temp_names[count++] = stop->name; // Guarda só o ponteiro
                     
                     stop_node = stop_node->next;
                 } while (stop_node != start);

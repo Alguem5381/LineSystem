@@ -8,10 +8,10 @@
 #include <wchar.h>
 
 /// @defgroup Hours
-/// @brief Tipo e funções para manipular horários
+/// @brief Estrutura e funções para manipular horários
 /// @{
 
-/// @brief Tipo para horários
+/// @brief estrutura para horários
 typedef struct Hours
 {
     int hours;

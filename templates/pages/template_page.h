@@ -8,6 +8,7 @@
 #include <page_results.h>
 #include <style.h>
 
+// Inicializador da página
 PageResult init_template_page(PageArgs args);
 
 #endif //TEMPLATE_PAGE_H

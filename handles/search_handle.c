@@ -11,7 +11,7 @@
 #define DBL 256
 #define TIME_DBL 7
 
-HandleResult init_search_handle(Style const *style, Object *data)
+HandleResult init_search_handle(Style const *style, Data *data)
 {
     // Ponteiro para a memoria persistente
     void *persistence[3] = {NULL, NULL, NULL};

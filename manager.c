@@ -22,25 +22,27 @@
 #include <newstop_handle.h>
 #include <editstop_handle.h>
 
+/// @brief Função para iniciar o ncurses
+/// @return 1 se sucesso 0 se falha
 int init_ncurses()
 {
+    // Configura a localidade
     setlocale(LC_ALL, "");
 
+    //Espande o terminal para 40x160
     printf("\x1b[8;40;160t");
     fflush(stdout);
 
-    resizeterm(40, 160);
+    initscr();              //Inicia a tela
+    cbreak();               //Remove a espera do enter
+    curs_set(0);            //Deixa o cursor invisível
+    noecho();               //Não permite o terminal desenhar a tecla digitada na tela
+    keypad(stdscr, true);   //Ativa a detecção de teclas especiais
+    start_color();          //Inicia o sistema de cores do ncurses
 
-    initscr();
-    cbreak();
-    curs_set(0);
-    noecho();
-    keypad(stdscr, true);
-    start_color();
-
-    if(!has_colors())
+    if(!has_colors())       //Verifica se há cores
     {
-        endwin(); // Importante fechar antes de printar erro
+        endwin();
         printf("Não suporta cores\n");
         return 0;
     }
@@ -50,17 +52,24 @@ int init_ncurses()
     return 1;
 }
 
+
+/// @brief Finaliza o ncurses e retorna a visibilidade do cursor
+/// @return 1 se sucesso e 0 se falha
 int end_ncurses()
 {
     curs_set(1);
-    endwin();
+    endwin();       //Finaliza a tela
     return 1;
 }
 
+/// @brief Inicializa as cores
+/// @param style O estilo que receberá os valores de cada par
+/// @return 1 se sucesso e 0 se falha
 int init_style(Style *style)
 {
     if (!style) return 0;
 
+    //init_pair() inicializa o par de cor
     init_pair(1, COLOR_BLACK, COLOR_WHITE);
     init_pair(2, COLOR_BLACK, COLOR_CYAN);
     init_pair(3, COLOR_CYAN, COLOR_CYAN);
@@ -80,7 +89,7 @@ int main()
 {
     //Structs
     Style style;
-    Object data;
+    Data data;
 
     // Inicializa o objeto com NULL antes de carregar
     defineObject(&data);
@@ -88,6 +97,7 @@ int main()
     //Funções de configuração do programa e structs 
     int result = 1;
 
+    // Carrega os dados da memória
     loadData(&data);
 
     if (!init_ncurses())
@@ -121,6 +131,7 @@ int main()
 
     while(running)
     {
+        // Tratamento dos estados
         switch (handle_result.state)
         {
         case state_main:
@@ -164,6 +175,9 @@ int main()
             break;
         }
     }
+
+    // Não pode liberar os dados do handle_result porque eles
+    // fazem parte dos dados carregados da memória
 
     end_ncurses();
 

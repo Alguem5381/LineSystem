@@ -24,7 +24,6 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *curr
 {
     PageResult result = {0};
 
-    // --- Contextos (Iguais ao newstop) ---
     DrawContext general_context = { .width = 100, .height = 100 };
     DrawContext first_text_context = { .width = 70, .height = 100, .element_in_focus = 1 };
     DrawContext second_text_context = { .width = 70, .height = 100 };
@@ -37,7 +36,7 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *curr
     set_style(args.style, &third_text_context);
     set_style(args.style, &dialog_context);
 
-    // Variáveis de Texto
+    // Variáveis de texto
     wchar_t first_text[DBL] = L"\0";
     wchar_t second_text[DBL] = L"\0";
     wchar_t third_text[DBL] = L"\0";
@@ -45,7 +44,7 @@ PageResult init_editstop_page(PageArgs args, wchar_t const *error, wchar_t *curr
     // Título
     wchar_t title_text[DBL] = L"Editar Parada";
 
-    // Teclas e Opções
+    // Teclas e opções
     wchar_t *keys[] = {L"Esc", L"↑", L"←", L"→", L"↵"};
     wchar_t *options[] = {L"Cancelar", L"Sobe", L"Esq", L"Dir", L"Salvar"};
     int keys_length = sizeof(keys) / sizeof(keys[0]);

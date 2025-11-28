@@ -154,9 +154,9 @@ PageResult init_newline_page(PageArgs args, wchar_t const *error)
 
         case number:
             if (is_popup_on) break;
-            if (first_text_context.element_in_focus)
+            if (first_text_context.element_in_focus && wcslen(first_text) < 20)
                 add_lastw(first_text, DBL, character);
-            else if (second_text_context.element_in_focus)
+            else if (second_text_context.element_in_focus && wcslen(second_text) < 20)
                 add_lastw(second_text, DBL, character);
             need_draw = 1;
             break;
