@@ -19,5 +19,5 @@ Primeiro é necessário baixar a biblioteca ncurses.
 ### Para compilar:
 Abra a pasta do projeto onde o manager.c está e execute o seguinte comando:
 ```bash
-gcc *.c DoubleList/*.c librarys/*.c pages/*.c handles/*.c -g -I./librarys/ -I./pages/ -I./handles/ -I./DoubleList/ -lncursesw -o ./.out/LineSystem
+gcc *.c librarys/*.c pages/*.c handles/*.c -g -I./librarys/ -I./pages/ -I./handles/ -lncursesw -o ./.out/LineSystem
 ```
