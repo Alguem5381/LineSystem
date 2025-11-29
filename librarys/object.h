@@ -39,12 +39,37 @@ typedef struct RouteResult {
     int found;       // 1 se achou, 0 se não
 } RouteResult;
 
+/// @brief Inicializa a estrutura principal, criando a lista de linhas.
+/// @param data Ponteiro para a estrutura principal.
+/// @return 1 se inicializar corretamente, 0 caso contrário.
 int defineObject(Data *data);
+
+/// @brief Carrega todas as linhas e paradas a partir dos arquivos existentes.
+/// @param data Estrutura que receberá os dados carregados.
+/// @return 1 se carregar corretamente, 0 caso contrário.
 int loadData(Data *data);
+
+/// @brief Salva todas as linhas e paradas em arquivos texto e binários.
+/// @param data Estrutura que contém os dados a serem salvos.
+/// @return 1 se salvar corretamente, 0 caso contrário.
 int saveObject(Data *data);
 
+/// @brief Libera toda a memória alocada pela estrutura principal.
+/// @param data Estrutura a ser destruída.
+/// @return 1 se liberar corretamente, 0 caso contrário.
 int deleteObject(Data *data);
+
+/// @brief Insere uma nova linha de ônibus na estrutura.
+/// @param data Estrutura onde a linha será inserida.
+/// @param name Nome da linha (wide char).
+/// @param enterprise Empresa responsável (wide char).
+/// @return 1 se inserir corretamente, 0 caso contrário.
 int insertBusLine(Data *data, wchar_t *name, wchar_t *enterprise);
+
+/// @brief Verifica se uma linha de ônibus já existe na estrutura.
+/// @param data Estrutura a ser verificada.
+/// @param name Nome da linha procurada (wide char).
+/// @return 1 se a linha existir, 0 caso contrário.
 int hasBusLine(Data *data, wchar_t *name);
 
 /// @brief Insere uma parada em uma linha após um nó especificado
